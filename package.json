@@ -1,0 +1,33 @@
+{
+  "name": "@hexlet/code",
+  "version": "1.0.0",
+  "description": "rss aggregator",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "test": "npx jest --bail"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anton2009danilov/frontend-project-lvl3.git"
+  },
+  "author": "Anton Danilov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anton2009danilov/frontend-project-lvl3/issues"
+  },
+  "homepage": "https://github.com/anton2009danilov/frontend-project-lvl3#readme",
+  "devDependencies": {
+    "@jest/globals": "^27.4.6",
+    "eslint": "^8.7.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-fp": "^2.3.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-jest": "^25.2.4",
+    "jest": "^27.4.7",
+    "jest-cli": "^27.4.7"
+  }
+}
