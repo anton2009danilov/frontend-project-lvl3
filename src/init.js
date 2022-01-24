@@ -1,7 +1,7 @@
-import Example from './Example.js';
+import Form from './Form.js';
 
 export default () => {
   const element = document.getElementById('point');
-  const obj = new Example(element);
-  obj.init();
+  const form = new Form(element);
+  form.init();
 };
