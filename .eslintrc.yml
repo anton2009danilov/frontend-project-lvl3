@@ -31,5 +31,6 @@ rules:
   fp/no-throw: 0
   fp/no-mutating-methods:
     - error
+    - commonjs
     - allowedObjects:
       - "_"
