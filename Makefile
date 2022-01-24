@@ -8,6 +8,8 @@ test:
 	npm test
 test-coverage:
 	npm test -- --coverage --coverageProvider=v8
+build:
+	webpack --mode=production --node-env=production
 serve:
 	webpack serve
 watch:
