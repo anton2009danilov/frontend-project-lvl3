@@ -10,7 +10,7 @@ plugins:
 env:
   node: true
   jest: true
-  es2020: true
+  es2021: true
 
 extends:
   - airbnb-base
@@ -26,11 +26,20 @@ rules:
   no-console: 0
   import/extensions: 0 # FIXME: remove when rule will be adjusted for new nodejs version
   no-underscore-dangle: [2, { "allow": ["__filename", "__dirname"] }]
+  no-undef: 0
   fp/no-nil: 0
   fp/no-unused-expression: 0
   fp/no-throw: 0
-  fp/no-mutating-methods:
-    - error
-    - commonjs
-    - allowedObjects:
-      - "_"
+  fp/no-mutating-methods: ["error", {
+      "commonjs": true,
+      "allowedObjects": ['_']
+    }
+  ]
+  fp/no-mutation: ["error", {
+  "commonjs": true,
+  "allowThis": true,
+  "exceptions": [
+    {"property": "innerHTML"}
+  ]
+}]
+    
