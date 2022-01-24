@@ -1,3 +1,4 @@
+const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
@@ -34,4 +35,8 @@ module.exports = {
       template: 'index.html',
     }),
   ],
+  output: {
+    path: path.resolve(__dirname, 'public'),
+    clean: true,
+  },
 };
