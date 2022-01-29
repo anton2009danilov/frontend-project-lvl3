@@ -35,11 +35,4 @@ rules:
       "allowedObjects": ['_']
     }
   ]
-  fp/no-mutation: ["error", {
-  "commonjs": true,
-  "allowThis": true,
-  "exceptions": [
-    {"property": "innerHTML"}
-  ]
-}]
-    
+  fp/no-mutation: 0
