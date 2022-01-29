@@ -15,7 +15,7 @@ export default () => {
     posts: document.querySelector('div.posts'),
   };
 
-  const watchedState = onChange(state, (path, value, prevValue) => {
+  const watchedState = onChange(state, () => {
     console.log(state);
   });
 
