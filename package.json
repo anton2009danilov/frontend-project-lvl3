@@ -51,6 +51,7 @@
   "dependencies": {
     "bootstrap": "^5.1.3",
     "html-webpack-plugin": "^5.5.0",
+    "i18next": "^21.6.10",
     "on-change": "^4.0.0",
     "yup": "^0.32.11"
   }
