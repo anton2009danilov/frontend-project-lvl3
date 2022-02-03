@@ -1,5 +1,15 @@
 import onChange from 'on-change';
 import { object, string } from 'yup';
+import i18next from 'i18next';
+import ru from './locales/ru.js';
+
+i18next.init({
+  lng: 'ru',
+  debug: true,
+  resources: {
+    ru,
+  },
+});
 
 const validateUrl = (url) => {
   const urlSchema = object({
@@ -53,17 +63,17 @@ export default (state) => {
         const isRepeated = feeds.some((feed) => feed.url === data.url);
 
         if (isRepeated) {
-          watchedState.message = 'RSS уже существует';
+          watchedState.message = i18next.t('yup.errors.alreadyExists');
           watchedState.isValid = false;
           return;
         }
 
         watchedState.feeds = [...feeds, data];
         watchedState.isValid = true;
-        watchedState.message = 'RSS успешно загружен';
+        watchedState.message = i18next.t('yup.success');
       })
-      .catch((err) => {
-        [watchedState.message] = err.errors;
+      .catch(() => {
+        watchedState.message = i18next.t('yup.errors.invalidUrl');
         watchedState.isValid = false;
       });
   });
