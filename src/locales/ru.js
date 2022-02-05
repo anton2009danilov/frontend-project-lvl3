@@ -4,7 +4,8 @@ export default {
       success: 'RSS успешно загружен',
       errors: {
         alreadyExists: 'RSS уже существует',
-        invalidUrl: 'Ccылка должна быть валидным URL',
+        invalidURL: 'Ccылка должна быть валидным URL',
+        invalidRSS: 'Ресурс не содержит валидный RSS',
       },
     },
   },
