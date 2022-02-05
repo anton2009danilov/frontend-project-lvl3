@@ -6,6 +6,7 @@ export default () => {
     message: null,
     isValid: false,
     feeds: [],
+    posts: [],
   };
 
   render(state);
