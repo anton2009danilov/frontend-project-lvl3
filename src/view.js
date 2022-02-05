@@ -1,3 +1,4 @@
+import axios from 'axios';
 import onChange from 'on-change';
 import { object, string } from 'yup';
 import i18next from 'i18next';
@@ -47,6 +48,107 @@ export default (state) => {
     }
   });
 
+  const renderFeeds = () => {
+    const { feeds, posts } = elements;
+    // const card = document.createElement('div');
+    // card.classList.add('card', 'border-0');
+    // feeds.append(card);
+    // const cardBody = document.createElement
+    feeds.innerHTML = `
+      <div class="card border-0">
+        <div class="card-body">
+        <h2 class="card-title h4">Фиды</h2>
+        </div>
+        <ul class="list-group border-0 rounded-0"></ul>
+      </div>
+    `;
+
+    posts.innerHTML = `
+      <div class="card border-0">
+        <div class="card-body">
+          <h2 class="card-title h4">Посты</h2>
+        </div>
+        <ul class="list-group border-0 rounded-0"></ul>
+      </div>
+    `;
+
+    const feedsList = feeds.querySelector('ul');
+
+    watchedState.feeds.forEach((feed) => {
+      const li = document.createElement('li');
+      li.classList.add('list-group-item', 'border-0', 'border-end-0');
+      li.innerHTML = `
+        <h3 class="h6 m-0">${feed.title}</h3>
+        <p class="m-0 small text-black-50">${feed.description}</p>
+      `;
+      feedsList.append(li);
+    });
+
+    const postList = posts.querySelector('ul');
+
+    watchedState.posts.forEach((post, index) => {
+      const postElement = document.createElement('li');
+      postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+      postElement.innerHTML = `
+        <a 
+          href="${post.link}"
+          class="fw-normal link-secondary"
+          data-id="${index}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          ${post.title}
+        </a>
+        <button
+          type="button"
+          class="btn btn-outline-primary btn-sm"
+          data-id="${index}"
+          data-bs-toggle="modal"
+          data-bs-target="#modal"
+        >
+          Просмотр
+        </button>
+      `;
+
+      // <li class="list-group-item d-flex justify-content-between align-items-start border-0 border-end-0">
+      //   <a href="https://ru.hexlet.io/courses/java-advanced/lessons/docker/theory_unit" class="fw-normal link-secondary" data-id="2" target="_blank" rel="noopener noreferrer">Docker / Java: Продвинутое использование</a>
+      //   <button type="button" class="btn btn-outline-primary btn-sm" data-id="2" data-bs-toggle="modal" data-bs-target="#modal">Просмотр</button>
+      // </li>
+      postList.append(postElement);
+    });
+  };
+
+  const getRSS = (url) => {
+    const parser = new DOMParser();
+
+    axios.get(url)
+      .then((response) => response.data)
+      .then((data) => parser.parseFromString(data, 'text/xml'))
+      .then((rssHtml) => {
+        const title = rssHtml.querySelector('title').textContent;
+        const description = rssHtml.querySelector('description').textContent;
+        const itemsElements = rssHtml.querySelectorAll('item');
+        const items = Array.from(itemsElements).map((el) => ({
+          title: el.querySelector('title').textContent,
+          link: el.querySelector('link').textContent,
+          description: el.querySelector('description').textContent,
+        }));
+
+        const feed = {
+          url, title, description,
+        };
+        watchedState.feeds = [...watchedState.feeds, feed];
+        watchedState.posts = [...watchedState.posts, ...items];
+        watchedState.isValid = true;
+        watchedState.message = i18next.t('yup.success');
+        renderFeeds();
+      })
+      .catch(() => {
+        watchedState.isValid = false;
+        watchedState.message = i18next.t('yup.errors.invalidRSS');
+      });
+  };
+
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -58,8 +160,6 @@ export default (state) => {
     validateUrl({ url })
       .then((data) => {
         const { feeds } = watchedState;
-        console.log(feeds, data);
-
         const isRepeated = feeds.some((feed) => feed.url === data.url);
 
         if (isRepeated) {
@@ -68,12 +168,10 @@ export default (state) => {
           return;
         }
 
-        watchedState.feeds = [...feeds, data];
-        watchedState.isValid = true;
-        watchedState.message = i18next.t('yup.success');
+        getRSS(data.url);
       })
       .catch(() => {
-        watchedState.message = i18next.t('yup.errors.invalidUrl');
+        watchedState.message = i18next.t('yup.errors.invalidURL');
         watchedState.isValid = false;
       });
   });
