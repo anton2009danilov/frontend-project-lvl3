@@ -50,10 +50,7 @@ export default (state) => {
 
   const renderFeeds = () => {
     const { feeds, posts } = elements;
-    // const card = document.createElement('div');
-    // card.classList.add('card', 'border-0');
-    // feeds.append(card);
-    // const cardBody = document.createElement
+
     feeds.innerHTML = `
       <div class="card border-0">
         <div class="card-body">
@@ -110,11 +107,20 @@ export default (state) => {
         </button>
       `;
 
-      // <li class="list-group-item d-flex justify-content-between align-items-start border-0 border-end-0">
-      //   <a href="https://ru.hexlet.io/courses/java-advanced/lessons/docker/theory_unit" class="fw-normal link-secondary" data-id="2" target="_blank" rel="noopener noreferrer">Docker / Java: Продвинутое использование</a>
-      //   <button type="button" class="btn btn-outline-primary btn-sm" data-id="2" data-bs-toggle="modal" data-bs-target="#modal">Просмотр</button>
-      // </li>
       postList.append(postElement);
+
+      postElement.addEventListener('click', (e) => {
+        const modal = document.getElementById('modal');
+        const modalTitle = modal.querySelector('.modal-title');
+        const modalBody = modal.querySelector('.modal-body');
+        const modalLink = modal.querySelector('a');
+
+        if (e.target.tagName === 'BUTTON') {
+          modalTitle.textContent = post.title;
+          modalBody.textContent = post.description;
+          modalLink.href = post.link;
+        }
+      });
     });
   };
 
