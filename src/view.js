@@ -127,9 +127,9 @@ export default (state) => {
   const getRSS = (url) => {
     const parser = new DOMParser();
 
-    axios.get(url)
+    axios.get(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}`)
       .then((response) => response.data)
-      .then((data) => parser.parseFromString(data, 'text/xml'))
+      .then((data) => parser.parseFromString(data.contents, 'text/xml'))
       .then((rssHtml) => {
         const title = rssHtml.querySelector('title').textContent;
         const description = rssHtml.querySelector('description').textContent;
@@ -143,6 +143,7 @@ export default (state) => {
         const feed = {
           url, title, description,
         };
+
         watchedState.feeds = [...watchedState.feeds, feed];
         watchedState.posts = [...watchedState.posts, ...items];
         watchedState.isValid = true;
