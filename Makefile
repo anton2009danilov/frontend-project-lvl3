@@ -7,7 +7,7 @@ lint:
 test:
 	npm test
 test-coverage:
-	npm test -- --coverage --coverageProvider=v8
+	npm test -- --coverage
 build:
 	webpack --mode=production --node-env=production
 serve:
