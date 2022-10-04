@@ -9,10 +9,10 @@ test:
 test-coverage:
 	npm test -- --coverage
 build:
-	webpack --mode=production --node-env=production
+	npx webpack --mode=production --node-env=production
 serve:
-	webpack serve
+	npx webpack serve
 watch:
-	webpack --watch
+	npx webpack --watch
 
 .PHONY: test
