@@ -1,4 +1,5 @@
 import axios from 'axios';
+import _ from 'lodash';
 import onChange from 'on-change';
 import { object, string } from 'yup';
 import i18next from 'i18next';
@@ -49,9 +50,9 @@ export default (state) => {
   });
 
   const renderFeeds = () => {
-    const { feeds, posts } = elements;
+    const { feeds: feedsContainerElement, posts: postsContainerElement } = elements;
 
-    feeds.innerHTML = `
+    feedsContainerElement.innerHTML = `
       <div class="card border-0">
         <div class="card-body">
         <h2 class="card-title h4">Фиды</h2>
@@ -60,7 +61,7 @@ export default (state) => {
       </div>
     `;
 
-    posts.innerHTML = `
+    postsContainerElement.innerHTML = `
       <div class="card border-0">
         <div class="card-body">
           <h2 class="card-title h4">Посты</h2>
@@ -69,7 +70,7 @@ export default (state) => {
       </div>
     `;
 
-    const feedsList = feeds.querySelector('ul');
+    const feedsList = feedsContainerElement.querySelector('ul');
 
     watchedState.feeds.forEach((feed) => {
       const li = document.createElement('li');
@@ -81,9 +82,11 @@ export default (state) => {
       feedsList.append(li);
     });
 
-    const postList = posts.querySelector('ul');
+    const postList = postsContainerElement.querySelector('ul');
 
-    watchedState.posts.forEach((post, index) => {
+    const sortedPosts = _.sortBy(state.posts, (post) => post.pubDate);
+
+    sortedPosts.forEach((post, index) => {
       const postElement = document.createElement('li');
       postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
       postElement.innerHTML = `
@@ -107,7 +110,7 @@ export default (state) => {
         </button>
       `;
 
-      postList.append(postElement);
+      postList.prepend(postElement);
 
       postElement.addEventListener('click', (e) => {
         const modal = document.getElementById('modal');
@@ -124,36 +127,95 @@ export default (state) => {
     });
   };
 
-  const getRSS = (url) => {
+  const getNewRSS = (url) => {
     const parser = new DOMParser();
 
-    axios.get(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}`)
+    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
       .then((response) => response.data)
       .then((data) => parser.parseFromString(data.contents, 'text/xml'))
       .then((rssHtml) => {
+        const lastId = _.isEmpty(state.feeds) ? 0 : _.last(state.feeds).id;
+        const newId = lastId + 1;
         const title = rssHtml.querySelector('title').textContent;
         const description = rssHtml.querySelector('description').textContent;
-        const itemsElements = rssHtml.querySelectorAll('item');
-        const items = Array.from(itemsElements).map((el) => ({
+        const pubDate = rssHtml.querySelector('pubDate').textContent;
+        const postElements = rssHtml.querySelectorAll('item');
+        const posts = Array.from(postElements).map((el) => ({
+          feedId: newId,
           title: el.querySelector('title').textContent,
           link: el.querySelector('link').textContent,
           description: el.querySelector('description').textContent,
+          pubDate: el.querySelector('pubDate').textContent,
         }));
 
         const feed = {
-          url, title, description,
+          id: newId,
+          url,
+          title,
+          description,
+          pubDate,
         };
 
         watchedState.feeds = [...watchedState.feeds, feed];
-        watchedState.posts = [...watchedState.posts, ...items];
         watchedState.isValid = true;
         watchedState.message = i18next.t('yup.success');
+        watchedState.posts = [
+          ...watchedState.posts,
+          ..._.sortBy(posts, (post) => (-post.pubDate)),
+        ];
         renderFeeds();
       })
       .catch(() => {
         watchedState.isValid = false;
         watchedState.message = i18next.t('yup.errors.invalidRSS');
       });
+  };
+
+  const updateRSS = () => {
+    const currentDate = (new Date()).toUTCString();
+
+    // const lastPostPubDate = _.isEmpty(_.first(state.posts)) ? .pubDate;
+    console.log(state);
+    // console.log(currentDate);
+    state.feeds.forEach((feed, index) => {
+      const { id, url, pubDate } = feed;
+      console.log(url);
+      const currentPosts = _.filter(state.posts, ({ feedId }) => feedId === id);
+
+      const parser = new DOMParser();
+
+      axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+        .then((response) => response.data)
+        .then((data) => parser.parseFromString(data.contents, 'text/xml'))
+        .then((rssHtml) => {
+          const postElements = rssHtml.querySelectorAll('item');
+          const posts = Array.from(postElements).map((el) => ({
+            feedId: id,
+            title: el.querySelector('title').textContent,
+            link: el.querySelector('link').textContent,
+            description: el.querySelector('description').textContent,
+            pubDate: el.querySelector('pubDate').textContent,
+          }));
+
+          const newPubDate = rssHtml.querySelector('pubDate').textContent;
+          const newPosts = _.differenceWith(posts, currentPosts, _.isEqual);
+
+          watchedState.feeds[index] = { ...feed, pubDate: newPubDate };
+
+          if (!_.isEmpty(newPosts)) {
+            watchedState.posts = [
+              ...watchedState.posts,
+              ..._.sortBy(newPosts, (post) => (-post.pubDate)),
+            ];
+
+            renderFeeds();
+          }
+        })
+        .catch((e) => { throw (e); });
+    });
+
+    const timeStep = 5000;
+    setTimeout(updateRSS, timeStep);
   };
 
   elements.form.addEventListener('submit', (e) => {
@@ -175,11 +237,13 @@ export default (state) => {
           return;
         }
 
-        getRSS(data.url);
+        getNewRSS(data.url);
       })
       .catch(() => {
         watchedState.message = i18next.t('yup.errors.invalidURL');
         watchedState.isValid = false;
       });
   });
+
+  updateRSS();
 };
