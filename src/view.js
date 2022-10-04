@@ -72,7 +72,7 @@ export default (state) => {
 
     const feedsList = feedsContainerElement.querySelector('ul');
 
-    watchedState.feeds.forEach((feed) => {
+    state.feeds.forEach((feed) => {
       const li = document.createElement('li');
       li.classList.add('list-group-item', 'border-0', 'border-end-0');
       li.innerHTML = `
@@ -84,16 +84,15 @@ export default (state) => {
 
     const postList = postsContainerElement.querySelector('ul');
 
-    const sortedPosts = _.sortBy(state.posts, (post) => post.pubDate);
-
-    sortedPosts.forEach((post, index) => {
+    state.posts.forEach((post, postIndex) => {
       const postElement = document.createElement('li');
       postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
       postElement.innerHTML = `
         <a 
           href="${post.link}"
-          class="fw-normal link-secondary"
-          data-id="${index}"
+          class="${post.isRead ? 'fw-normal' : 'fw-bold'} link-secondary"
+          style="color: ${!post.isRead && 'blue'};"
+          data-post_id="${post.id}"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -102,7 +101,7 @@ export default (state) => {
         <button
           type="button"
           class="btn btn-outline-primary btn-sm"
-          data-id="${index}"
+          data-post_id="${post.id}"
           data-bs-toggle="modal"
           data-bs-target="#modal"
         >
@@ -119,9 +118,12 @@ export default (state) => {
         const modalLink = modal.querySelector('a');
 
         if (e.target.tagName === 'BUTTON') {
+          watchedState.posts[postIndex] = { ...post, isRead: true };
+
           modalTitle.textContent = post.title;
           modalBody.textContent = post.description;
           modalLink.href = post.link;
+          renderFeeds();
         }
       });
     });
@@ -134,22 +136,42 @@ export default (state) => {
       .then((response) => response.data)
       .then((data) => parser.parseFromString(data.contents, 'text/xml'))
       .then((rssHtml) => {
-        const lastId = _.isEmpty(state.feeds) ? 0 : _.last(state.feeds).id;
-        const newId = lastId + 1;
+        const { feeds, posts } = state;
+
+        const lastFeedId = _.isEmpty(feeds) ? 0 : _.last(feeds).id;
+        const newFeedId = lastFeedId + 1;
+        const lastPostId = _.isEmpty(posts) ? 0 : _.last(posts).id;
+        const newPostId = lastPostId + 1;
+
         const title = rssHtml.querySelector('title').textContent;
         const description = rssHtml.querySelector('description').textContent;
         const pubDate = rssHtml.querySelector('pubDate').textContent;
         const postElements = rssHtml.querySelectorAll('item');
-        const posts = Array.from(postElements).map((el) => ({
-          feedId: newId,
-          title: el.querySelector('title').textContent,
-          link: el.querySelector('link').textContent,
-          description: el.querySelector('description').textContent,
-          pubDate: el.querySelector('pubDate').textContent,
-        }));
+        const newPostsUnsorted = Array.from(postElements).reduce((postsArr, el, index) => {
+          const id = newPostId + index;
+
+          return [
+            ...postsArr,
+            {
+              feedId: newFeedId,
+              title: el.querySelector('title').textContent,
+              link: el.querySelector('link').textContent,
+              description: el.querySelector('description').textContent,
+              pubDate: el.querySelector('pubDate').textContent,
+              isRead: false,
+              id,
+            },
+          ];
+        }, []);
+
+        const newPosts = _.sortBy(newPostsUnsorted, (post) => (post.pubDate))
+          .map((post, index) => {
+            const id = newPostId + index;
+            return { ...post, id };
+          });
 
         const feed = {
-          id: newId,
+          id: newFeedId,
           url,
           title,
           description,
@@ -161,7 +183,7 @@ export default (state) => {
         watchedState.message = i18next.t('yup.success');
         watchedState.posts = [
           ...watchedState.posts,
-          ..._.sortBy(posts, (post) => (-post.pubDate)),
+          ...newPosts,
         ];
         renderFeeds();
       })
@@ -192,14 +214,22 @@ export default (state) => {
           }));
 
           const newPubDate = rssHtml.querySelector('pubDate').textContent;
-          const newPosts = _.differenceWith(posts, currentPosts, _.isEqual);
+          const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
 
           watchedState.feeds[index] = { ...feed, pubDate: newPubDate };
 
-          if (!_.isEmpty(newPosts)) {
+          if (!_.isEmpty(diffPosts)) {
+            const lastPostId = _.isEmpty(state.posts) ? 0 : _.last(state.posts).id;
+
+            const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
+              .map((post, postIndex) => {
+                const newPostId = lastPostId + postIndex + 1;
+                return { ...post, id: newPostId };
+              });
+
             watchedState.posts = [
               ...watchedState.posts,
-              ..._.sortBy(newPosts, (post) => (-post.pubDate)),
+              ...newPosts,
             ];
 
             renderFeeds();
