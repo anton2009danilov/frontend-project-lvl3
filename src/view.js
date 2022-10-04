@@ -172,14 +172,8 @@ export default (state) => {
   };
 
   const updateRSS = () => {
-    const currentDate = (new Date()).toUTCString();
-
-    // const lastPostPubDate = _.isEmpty(_.first(state.posts)) ? .pubDate;
-    console.log(state);
-    // console.log(currentDate);
     state.feeds.forEach((feed, index) => {
-      const { id, url, pubDate } = feed;
-      console.log(url);
+      const { id, url } = feed;
       const currentPosts = _.filter(state.posts, ({ feedId }) => feedId === id);
 
       const parser = new DOMParser();
