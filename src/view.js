@@ -90,7 +90,7 @@ export default (state) => {
       postElement.innerHTML = `
         <a 
           href="${post.link}"
-          class="${post.isRead ? 'fw-normal' : 'fw-bold'} link-secondary"
+          class="${post.isRead ? 'fw-normal' : 'fw-bold'}"
           style="color: ${!post.isRead && 'blue'};"
           data-post_id="${post.id}"
           target="_blank"
