@@ -38,6 +38,8 @@
     "eslint-plugin-fp": "^2.3.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-jest": "^25.2.4",
+    "eslint-plugin-jest-dom": "^4.0.2",
+    "eslint-plugin-testing-library": "^5.7.2",
     "jest": "^27.4.7",
     "jest-cli": "^27.4.7",
     "postcss-loader": "^6.2.1",
