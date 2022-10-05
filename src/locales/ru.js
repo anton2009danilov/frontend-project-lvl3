@@ -5,7 +5,7 @@ export default {
       rssView: 'Просмотр',
       errors: {
         alreadyExists: 'RSS уже существует',
-        invalidURL: 'Ccылка должна быть валидным URL',
+        invalidURL: 'Ссылка должна быть валидным URL',
         invalidRSS: 'Ресурс не содержит валидный RSS',
         emptyRSS: 'Не должно быть пустым',
         networkError: 'Ошибка сети',
