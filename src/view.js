@@ -132,7 +132,7 @@ export default (state) => {
   const getNewRSS = (url) => {
     if (!url) {
       watchedState.isValid = false;
-      watchedState.message = i18next.t('yup.errors.isEmpty');
+      watchedState.message = i18next.t('yup.errors.emptyRSS');
       return;
     }
 
@@ -141,6 +141,11 @@ export default (state) => {
     axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
       .then((response) => response.data)
       .then((data) => parser.parseFromString(data.contents, 'text/xml'))
+      .catch((e) => {
+        watchedState.isValid = false;
+        watchedState.message = i18next.t('yup.errors.networkError');
+        throw (e);
+      })
       .then((rssHtml) => {
         const { feeds, posts } = state;
 
@@ -150,6 +155,7 @@ export default (state) => {
         const newPostId = lastPostId + 1;
 
         const title = rssHtml.querySelector('title').textContent;
+
         const description = rssHtml.querySelector('description').textContent;
         const pubDate = rssHtml.querySelector('pubDate').textContent;
         const postElements = rssHtml.querySelectorAll('item');
@@ -193,9 +199,12 @@ export default (state) => {
         ];
         renderFeeds();
       })
-      .catch(() => {
-        watchedState.isValid = false;
-        watchedState.message = i18next.t('yup.errors.invalidRSS');
+      .catch((e) => {
+        if (e.message !== 'Network Error') {
+          watchedState.isValid = false;
+          watchedState.message = i18next.t('yup.errors.invalidRSS');
+          throw (e);
+        }
       });
   };
 
