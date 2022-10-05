@@ -6,8 +6,6 @@ lint:
 	npx eslint .
 test:
 	npm test
-test-coverage:
-	npm test -- --coverage
 build:
 	npx webpack --mode=production --node-env=production
 serve:
