@@ -130,6 +130,12 @@ export default (state) => {
   };
 
   const getNewRSS = (url) => {
+    if (!url) {
+      watchedState.isValid = false;
+      watchedState.message = i18next.t('yup.errors.isEmpty');
+      return;
+    }
+
     const parser = new DOMParser();
 
     axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
