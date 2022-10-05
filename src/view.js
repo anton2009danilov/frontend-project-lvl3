@@ -123,6 +123,9 @@ export default (state) => {
           modalTitle.textContent = post.title;
           modalBody.textContent = post.description;
           modalLink.href = post.link;
+
+          watchedState.isValid = true;
+          watchedState.message = i18next.t('yup.rssView');
           renderFeeds();
         }
       });
