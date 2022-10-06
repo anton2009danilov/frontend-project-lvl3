@@ -120,11 +120,6 @@ export default (state) => {
     });
   };
 
-  const renderRSS = () => {
-    renderFeeds();
-    renderPosts();
-  };
-
   const renderInputValidity = () => {
     if (state.ui.input.isValid) {
       elements.input.classList.remove('is-invalid');
@@ -138,10 +133,15 @@ export default (state) => {
     elements.feedback.classList.remove('text-success');
   };
 
-  if (!_.isEmpty(state.rss.feeds)) {
-    renderRSS();
-    renderInputValidity();
-  }
+  const renderView = () => {
+    if (!_.isEmpty(state.rss.feeds)) {
+      renderFeeds();
+      renderPosts();
+      renderInputValidity();
+    }
 
-  elements.feedback.textContent = state.ui.message;
+    elements.feedback.textContent = state.ui.message;
+  };
+
+  renderView();
 };
