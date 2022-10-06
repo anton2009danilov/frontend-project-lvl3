@@ -21,7 +21,6 @@ export default () => {
       message: null,
     },
     rss: {
-      isWatchedForUpdates: false,
       feeds: [],
       posts: [],
     },
@@ -118,6 +117,57 @@ export default () => {
       });
   };
 
+  const updateRSS = () => rss.feeds.forEach((feed, index) => {
+    const { id, url } = feed;
+    const currentPosts = _.filter(rss.posts, ({ feedId }) => feedId === id);
+
+    const parser = new DOMParser();
+
+    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+      .then((response) => response.data)
+      .then((data) => parser.parseFromString(data.contents, 'text/xml'))
+      .then((rssHtml) => {
+        const postElements = rssHtml.querySelectorAll('item');
+        const posts = Array.from(postElements).map((el) => ({
+          feedId: id,
+          title: el.querySelector('title').textContent,
+          link: el.querySelector('link').textContent,
+          description: el.querySelector('description').textContent,
+          pubDate: el.querySelector('pubDate').textContent,
+        }));
+
+        const newPubDate = rssHtml.querySelector('pubDate').textContent;
+        const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
+
+        rss.feeds[index] = { ...feed, pubDate: newPubDate };
+
+        if (!_.isEmpty(diffPosts)) {
+          const lastPostId = _.isEmpty(rss.posts) ? 0 : _.last(rss.posts).id;
+
+          const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
+            .map((post, postIndex) => {
+              const newPostId = lastPostId + postIndex + 1;
+              return { ...post, id: newPostId };
+            });
+
+          rss.posts = [
+            ...rss.posts,
+            ...newPosts,
+          ];
+
+          render(state);
+        }
+      })
+      .catch((e) => { throw (e); });
+  });
+
+  const watchForUpdates = () => {
+    const timeStep = 5000;
+    setTimeout(watchForUpdates, timeStep);
+
+    updateRSS();
+  };
+
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -149,4 +199,5 @@ export default () => {
   });
 
   render(state);
+  watchForUpdates();
 };
