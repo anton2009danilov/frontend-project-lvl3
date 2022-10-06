@@ -21,7 +21,7 @@ export default () => {
       message: null,
     },
     rss: {
-      isUpdating: false,
+      isWatchedForUpdates: false,
       feeds: [],
       posts: [],
     },
