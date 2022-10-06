@@ -3,12 +3,12 @@ import render from './view.js';
 export default () => {
   const state = {
     ui: {
-      message: null,
-    },
-    rss: {
       input: {
         isValid: false,
       },
+      message: null,
+    },
+    rss: {
       feeds: [],
       posts: [],
     },

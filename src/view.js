@@ -25,7 +25,7 @@ export default (state) => {
   const { elements } = state;
 
   const watchedState = onChange(state, (path, value) => {
-    if (path === 'rss.input.isValid') {
+    if (path === 'ui.input.isValid') {
       if (value) {
         elements.input.classList.remove('is-invalid');
         elements.feedback.classList.remove('text-danger');
@@ -118,7 +118,7 @@ export default (state) => {
           modalBody.textContent = post.description;
           modalLink.href = post.link;
 
-          watchedState.rss.input.isValid = true;
+          watchedState.ui.input.isValid = true;
           watchedState.ui.message = i18next.t('yup.rssView');
           renderFeeds();
         }
@@ -128,7 +128,7 @@ export default (state) => {
 
   const getNewRSS = (url) => {
     if (!url) {
-      watchedState.rss.input.isValid = false;
+      watchedState.ui.input.isValid = false;
       watchedState.ui.message = i18next.t('yup.errors.emptyRSS');
       return;
     }
@@ -139,7 +139,7 @@ export default (state) => {
       .then((response) => response.data)
       .then((data) => parser.parseFromString(data.contents, 'text/xml'))
       .catch((e) => {
-        watchedState.rss.input.isValid = false;
+        watchedState.ui.input.isValid = false;
         watchedState.ui.message = i18next.t('yup.errors.networkError');
         throw (e);
       })
@@ -188,7 +188,7 @@ export default (state) => {
         };
 
         watchedState.rss.feeds = [...watchedState.rss.feeds, feed];
-        watchedState.rss.input.isValid = true;
+        watchedState.ui.input.isValid = true;
         watchedState.ui.message = i18next.t('yup.success');
         watchedState.rss.posts = [
           ...watchedState.rss.posts,
@@ -198,7 +198,7 @@ export default (state) => {
       })
       .catch((e) => {
         if (e.message !== 'Network Error') {
-          watchedState.rss.input.isValid = false;
+          watchedState.ui.input.isValid = false;
           watchedState.ui.message = i18next.t('yup.errors.invalidRSS');
           throw (e);
         }
@@ -269,7 +269,7 @@ export default (state) => {
 
         if (isRepeated) {
           watchedState.ui.message = i18next.t('yup.errors.alreadyExists');
-          watchedState.rss.input.isValid = false;
+          watchedState.ui.input.isValid = false;
           return;
         }
 
@@ -277,7 +277,7 @@ export default (state) => {
       })
       .catch(() => {
         watchedState.ui.message = i18next.t('yup.errors.invalidURL');
-        watchedState.rss.input.isValid = false;
+        watchedState.ui.input.isValid = false;
       });
   });
 
