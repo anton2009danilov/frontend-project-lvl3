@@ -9,3 +9,22 @@
 
 ### Vercel Production Deployment
 https://frontend-project-lvl3-one-umber.vercel.app/
+
+### Project description
+Web application for reading Rich Site Summary (RSS).
+Put rss-link into form then application will display RSS articles.
+Every 5 seconds it checks for RSS-feeds updates.
+
+### Project installation
+
+```
+git clone https://github.com/anton2009danilov/frontend-project-lvl3
+
+cd frontend-project-lvl3
+
+npm ci
+
+make serve
+
+open url "http://localhost:8080/" in browser
+```
