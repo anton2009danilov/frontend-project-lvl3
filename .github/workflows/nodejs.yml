@@ -32,4 +32,7 @@ jobs:
       
       - name: run linter
         run: make lint
+
+      - name: run tests
+        run: make test
             
