@@ -34,21 +34,12 @@ export default (state) => {
   });
 
   const renderFeeds = () => {
-    const { feeds: feedsContainerElement, posts: postsContainerElement } = elements;
+    const { feeds: feedsContainerElement } = elements;
 
     feedsContainerElement.innerHTML = `
       <div class="card border-0">
         <div class="card-body">
         <h2 class="card-title h4">Фиды</h2>
-        </div>
-        <ul class="list-group border-0 rounded-0"></ul>
-      </div>
-    `;
-
-    postsContainerElement.innerHTML = `
-      <div class="card border-0">
-        <div class="card-body">
-          <h2 class="card-title h4">Посты</h2>
         </div>
         <ul class="list-group border-0 rounded-0"></ul>
       </div>
@@ -65,6 +56,19 @@ export default (state) => {
       `;
       feedsList.append(li);
     });
+  };
+
+  const renderPosts = () => {
+    const { posts: postsContainerElement } = elements;
+
+    postsContainerElement.innerHTML = `
+      <div class="card border-0">
+        <div class="card-body">
+          <h2 class="card-title h4">Посты</h2>
+        </div>
+        <ul class="list-group border-0 rounded-0"></ul>
+      </div>
+    `;
 
     const postList = postsContainerElement.querySelector('ul');
 
@@ -110,10 +114,15 @@ export default (state) => {
 
           watchedState.ui.input.isValid = true;
           watchedState.ui.message = i18next.t('yup.rssView');
-          renderFeeds();
+          renderPosts();
         }
       });
     });
+  };
+
+  const renderRSS = () => {
+    renderFeeds();
+    renderPosts();
   };
 
   const renderInputValidity = () => {
@@ -130,7 +139,7 @@ export default (state) => {
   };
 
   if (!_.isEmpty(state.rss.feeds)) {
-    renderFeeds();
+    renderRSS();
     renderInputValidity();
   }
 
