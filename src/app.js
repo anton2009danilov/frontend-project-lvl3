@@ -2,11 +2,18 @@ import render from './view.js';
 
 export default () => {
   const state = {
-    inputUrl: null,
-    message: null,
-    isValid: false,
-    feeds: [],
-    posts: [],
+    form: {
+      input: {
+        isValid: false
+      },
+    },
+    ui: {
+      message: null,
+    },
+    rss: {
+      feeds: [],
+      posts: [],
+    },
   };
 
   render(state);

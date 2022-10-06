@@ -72,7 +72,7 @@ export default (state) => {
 
     const feedsList = feedsContainerElement.querySelector('ul');
 
-    state.feeds.forEach((feed) => {
+    state.rss.feeds.forEach((feed) => {
       const li = document.createElement('li');
       li.classList.add('list-group-item', 'border-0', 'border-end-0');
       li.innerHTML = `
@@ -84,7 +84,7 @@ export default (state) => {
 
     const postList = postsContainerElement.querySelector('ul');
 
-    state.posts.forEach((post, postIndex) => {
+    state.rss.posts.forEach((post, postIndex) => {
       const postElement = document.createElement('li');
       postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
       postElement.innerHTML = `
@@ -118,14 +118,14 @@ export default (state) => {
         const modalLink = modal.querySelector('a');
 
         if (e.target.tagName === 'BUTTON') {
-          watchedState.posts[postIndex] = { ...post, isRead: true };
+          watchedState.rss.posts[postIndex] = { ...post, isRead: true };
 
           modalTitle.textContent = post.title;
           modalBody.textContent = post.description;
           modalLink.href = post.link;
 
-          watchedState.isValid = true;
-          watchedState.message = i18next.t('yup.rssView');
+          watchedState.form.input.isValid = true;
+          watchedState.ui.message = i18next.t('yup.rssView');
           renderFeeds();
         }
       });
@@ -134,8 +134,8 @@ export default (state) => {
 
   const getNewRSS = (url) => {
     if (!url) {
-      watchedState.isValid = false;
-      watchedState.message = i18next.t('yup.errors.emptyRSS');
+      watchedState.form.input.isValid = false;
+      watchedState.ui.message = i18next.t('yup.errors.emptyRSS');
       return;
     }
 
@@ -145,12 +145,12 @@ export default (state) => {
       .then((response) => response.data)
       .then((data) => parser.parseFromString(data.contents, 'text/xml'))
       .catch((e) => {
-        watchedState.isValid = false;
-        watchedState.message = i18next.t('yup.errors.networkError');
+        watchedState.form.input.isValid = false;
+        watchedState.ui.message = i18next.t('yup.errors.networkError');
         throw (e);
       })
       .then((rssHtml) => {
-        const { feeds, posts } = state;
+        const { feeds, posts } = state.rss;
 
         const lastFeedId = _.isEmpty(feeds) ? 0 : _.last(feeds).id;
         const newFeedId = lastFeedId + 1;
@@ -193,28 +193,28 @@ export default (state) => {
           pubDate,
         };
 
-        watchedState.feeds = [...watchedState.feeds, feed];
-        watchedState.isValid = true;
-        watchedState.message = i18next.t('yup.success');
-        watchedState.posts = [
-          ...watchedState.posts,
+        watchedState.rss.feeds = [...watchedState.rss.feeds, feed];
+        watchedState.form.input.isValid = true;
+        watchedState.ui.message = i18next.t('yup.success');
+        watchedState.rss.posts = [
+          ...watchedState.rss.posts,
           ...newPosts,
         ];
         renderFeeds();
       })
       .catch((e) => {
         if (e.message !== 'Network Error') {
-          watchedState.isValid = false;
-          watchedState.message = i18next.t('yup.errors.invalidRSS');
+          watchedState.form.input.isValid = false;
+          watchedState.ui.message = i18next.t('yup.errors.invalidRSS');
           throw (e);
         }
       });
   };
 
   const updateRSS = () => {
-    state.feeds.forEach((feed, index) => {
+    state.rss.feeds.forEach((feed, index) => {
       const { id, url } = feed;
-      const currentPosts = _.filter(state.posts, ({ feedId }) => feedId === id);
+      const currentPosts = _.filter(state.rss.posts, ({ feedId }) => feedId === id);
 
       const parser = new DOMParser();
 
@@ -234,10 +234,10 @@ export default (state) => {
           const newPubDate = rssHtml.querySelector('pubDate').textContent;
           const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
 
-          watchedState.feeds[index] = { ...feed, pubDate: newPubDate };
+          watchedState.rss.feeds[index] = { ...feed, pubDate: newPubDate };
 
           if (!_.isEmpty(diffPosts)) {
-            const lastPostId = _.isEmpty(state.posts) ? 0 : _.last(state.posts).id;
+            const lastPostId = _.isEmpty(state.rss.posts) ? 0 : _.last(state.rss.posts).id;
 
             const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
               .map((post, postIndex) => {
@@ -245,8 +245,8 @@ export default (state) => {
                 return { ...post, id: newPostId };
               });
 
-            watchedState.posts = [
-              ...watchedState.posts,
+            watchedState.rss.posts = [
+              ...watchedState.rss.posts,
               ...newPosts,
             ];
 
@@ -270,20 +270,20 @@ export default (state) => {
 
     validateUrl({ url })
       .then((data) => {
-        const { feeds } = watchedState;
+        const { feeds } = watchedState.rss;
         const isRepeated = feeds.some((feed) => feed.url === data.url);
 
         if (isRepeated) {
-          watchedState.message = i18next.t('yup.errors.alreadyExists');
-          watchedState.isValid = false;
+          watchedState.ui.message = i18next.t('yup.errors.alreadyExists');
+          watchedState.form.input.isValid = false;
           return;
         }
 
         getNewRSS(data.url);
       })
       .catch(() => {
-        watchedState.message = i18next.t('yup.errors.invalidURL');
-        watchedState.isValid = false;
+        watchedState.ui.message = i18next.t('yup.errors.invalidURL');
+        watchedState.form.input.isValid = false;
       });
   });
 
