@@ -51,6 +51,7 @@ export default () => {
       .catch((e) => {
         state.ui.input.isValid = false;
         state.ui.message = i18next.t('yup.errors.networkError');
+        render(state);
         throw (e);
       })
       .then((rssHtml) => {
