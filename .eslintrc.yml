@@ -1,26 +1,38 @@
 ---
 
+# https://github.com/jest-community/eslint-plugin-jest
 plugins:
   - jest
-  - testing-library
-  - jest-dom
+  - fp
 
+# Правильный способ включения поддержки глобальных идентификаторов
+# https://eslint.org/docs/user-guide/configuring#specifying-environments
 env:
+  node: true
   jest: true
-  browser: true
-  es2020: true
+  es2021: true
 
 extends:
-  - 'airbnb-base'
-  - 'plugin:jest/recommended'
-  - 'plugin:testing-library/react'
-  - "plugin:jest-dom/recommended"
+  - airbnb-base
+  - "plugin:jest/recommended"
+  - "plugin:fp/recommended"
 
+# Включает поддержку конструкции import.meta.url
 parserOptions:
-  ecmaVersion: latest
+  ecmaVersion: 2020
 
+# Единственное отключенное правило. Все остальное должно соблюдаться
 rules:
-  import/extensions: 0
-  import/no-unresolved: 0
-  no-param-reassign: 0
   no-console: 0
+  import/extensions: 0 # FIXME: remove when rule will be adjusted for new nodejs version
+  no-underscore-dangle: [2, { "allow": ["__filename", "__dirname"] }]
+  no-undef: 0
+  fp/no-nil: 0
+  fp/no-unused-expression: 0
+  fp/no-throw: 0
+  fp/no-mutating-methods: ["error", {
+      "commonjs": true,
+      "allowedObjects": ['_']
+    }
+  ]
+  fp/no-mutation: 0
