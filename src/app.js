@@ -4,7 +4,7 @@ export default () => {
   const state = {
     form: {
       input: {
-        isValid: false
+        isValid: false,
       },
     },
     ui: {
