@@ -31,7 +31,7 @@ export default (state) => {
   };
 
   const watchedState = onChange(state, (path, value) => {
-    if (path === 'isValid') {
+    if (path === 'form.input.isValid') {
       if (value) {
         elements.input.classList.remove('is-invalid');
         elements.feedback.classList.remove('text-danger');
@@ -44,7 +44,7 @@ export default (state) => {
       elements.feedback.classList.remove('text-success');
     }
 
-    if (path === 'message') {
+    if (path === 'ui.message') {
       elements.feedback.textContent = value;
     }
   });
