@@ -27,27 +27,21 @@ export default (state) => {
     elements.feedback.classList.remove('text-success');
   };
 
-  const watchedState = onChange(state, (path, value) => {
-    if (path === 'ui.input.isValid') {
-      renderInputValidity();
-    }
+  const watchedState = onChange(state, () => {});
 
-    if (path === 'ui.message') {
-      elements.feedback.textContent = value;
-    }
-  });
+  const createFeedHtml = () => `
+    <div class="card border-0">
+      <div class="card-body">
+      <h2 class="card-title h4">Фиды</h2>
+      </div>
+      <ul class="list-group border-0 rounded-0"></ul>
+    </div>
+  `;
 
   const renderAllFeeds = () => {
     const { feeds: feedsContainerElement } = elements;
 
-    feedsContainerElement.innerHTML = `
-      <div class="card border-0">
-        <div class="card-body">
-        <h2 class="card-title h4">Фиды</h2>
-        </div>
-        <ul class="list-group border-0 rounded-0"></ul>
-      </div>
-    `;
+    feedsContainerElement.innerHTML = createFeedHtml();
 
     const feedsList = feedsContainerElement.querySelector('ul');
 
