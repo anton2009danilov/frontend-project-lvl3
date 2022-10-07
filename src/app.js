@@ -2,6 +2,7 @@ import axios from 'axios';
 import _ from 'lodash';
 import i18next from 'i18next';
 import { object, string } from 'yup';
+import { parseFeedFromRssHtml, parsePostsFromRssHtml, parseUpdatedRssHtml } from './parsers.js';
 import render from './view.js';
 
 const validateUrl = (url) => {
@@ -89,51 +90,6 @@ export default () => {
       .then((data) => parser.parseFromString(data.contents, 'text/xml'));
   };
 
-  const parseFeedFromRssHtml = (rssHtml, lastFeedId, url) => {
-    const newFeedId = lastFeedId + 1;
-
-    const title = rssHtml.querySelector('title').textContent;
-    const description = rssHtml.querySelector('description').textContent;
-    const pubDate = rssHtml.querySelector('pubDate').textContent;
-
-    return {
-      id: newFeedId,
-      url,
-      title,
-      description,
-      pubDate,
-    };
-  };
-
-  const parsePostsFromRssHtml = (rssHtml, lastPostId, lastFeedId) => {
-    const postElements = rssHtml.querySelectorAll('item');
-    const newPostId = lastPostId + 1;
-    const newFeedId = lastFeedId + 1;
-
-    const newPostsUnsorted = Array.from(postElements).reduce((postsArr, el, index) => {
-      const id = newPostId + index;
-
-      return [
-        ...postsArr,
-        {
-          feedId: newFeedId,
-          title: el.querySelector('title').textContent,
-          link: el.querySelector('link').textContent,
-          description: el.querySelector('description').textContent,
-          pubDate: el.querySelector('pubDate').textContent,
-          isRead: false,
-          id,
-        },
-      ];
-    }, []);
-
-    return _.sortBy(newPostsUnsorted, (post) => (post.pubDate))
-      .map((post, index) => {
-        const id = newPostId + index;
-        return { ...post, id };
-      });
-  };
-
   const getNewRSS = (url) => {
     if (checkForEmptyRssUrlError(url)) {
       return;
@@ -163,29 +119,14 @@ export default () => {
       .catch(hanldeInvalidRssError);
   };
 
-  const parseUpdatedFeedHtml = (rssHtml, feed, index) => {
+  const renderUpdatedRss = (feed, index, posts) => {
     const { id } = feed;
     const currentPosts = _.filter(rss.posts, ({ feedId }) => feedId === id);
-    const postElements = rssHtml.querySelectorAll('item');
-
-    const posts = Array.from(postElements).map((el) => ({
-      feedId: id,
-      title: el.querySelector('title').textContent,
-      link: el.querySelector('link').textContent,
-      description: el.querySelector('description').textContent,
-      pubDate: el.querySelector('pubDate').textContent,
-    }));
-
-    const newPubDate = rssHtml.querySelector('pubDate').textContent;
     const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
 
-    rss.feeds[index] = { ...feed, pubDate: newPubDate };
-
-    return diffPosts;
-  };
-
-  const renderUpdatedFeed = (diffPosts) => {
     if (!_.isEmpty(diffPosts)) {
+      rss.feeds[index] = { feed };
+
       const lastPostId = _.isEmpty(rss.posts) ? 0 : _.last(rss.posts).id;
 
       const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
@@ -207,8 +148,8 @@ export default () => {
     const { url } = feed;
 
     getRssHtml(url)
-      .then((rssHtml) => parseUpdatedFeedHtml(rssHtml, feed, index))
-      .then(renderUpdatedFeed)
+      .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
+      .then(renderUpdatedRss)
       .catch((e) => { throw (e); });
   });
 
