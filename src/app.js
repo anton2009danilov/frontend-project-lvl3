@@ -135,6 +135,10 @@ export default () => {
 
     rss.feeds[index] = { ...feed, pubDate: newPubDate };
 
+    return diffPosts;
+  };
+
+  const renderUpdatedFeed = (diffPosts) => {
     if (!_.isEmpty(diffPosts)) {
       const lastPostId = _.isEmpty(rss.posts) ? 0 : _.last(rss.posts).id;
 
@@ -162,6 +166,7 @@ export default () => {
       .then((response) => response.data)
       .then((data) => parser.parseFromString(data.contents, 'text/xml'))
       .then((rssHtml) => parseUpdatedFeedHtml(rssHtml, feed, index))
+      .then(renderUpdatedFeed)
       .catch((e) => { throw (e); });
   });
 
