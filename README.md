@@ -25,6 +25,5 @@ cd frontend-project-lvl3
 make install
 
 make serve
-
 ```
 Project is running at: http://localhost:8080/
