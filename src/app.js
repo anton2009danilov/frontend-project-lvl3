@@ -43,6 +43,27 @@ export default () => {
       .then((data) => parser.parseFromString(data.contents, 'text/xml'));
   };
 
+  const parsePostsFromRssHtml = (rssHtml, newPostId, newFeedId) => {
+    const postElements = rssHtml.querySelectorAll('item');
+
+    return Array.from(postElements).reduce((postsArr, el, index) => {
+      const id = newPostId + index;
+
+      return [
+        ...postsArr,
+        {
+          feedId: newFeedId,
+          title: el.querySelector('title').textContent,
+          link: el.querySelector('link').textContent,
+          description: el.querySelector('description').textContent,
+          pubDate: el.querySelector('pubDate').textContent,
+          isRead: false,
+          id,
+        },
+      ];
+    }, []);
+  };
+
   const getNewRSS = (url) => {
     if (!url) {
       state.ui.input.isValid = false;
@@ -62,36 +83,10 @@ export default () => {
 
         const lastFeedId = _.isEmpty(feeds) ? 0 : _.last(feeds).id;
         const newFeedId = lastFeedId + 1;
-        const lastPostId = _.isEmpty(posts) ? 0 : _.last(posts).id;
-        const newPostId = lastPostId + 1;
 
         const title = rssHtml.querySelector('title').textContent;
-
         const description = rssHtml.querySelector('description').textContent;
         const pubDate = rssHtml.querySelector('pubDate').textContent;
-        const postElements = rssHtml.querySelectorAll('item');
-        const newPostsUnsorted = Array.from(postElements).reduce((postsArr, el, index) => {
-          const id = newPostId + index;
-
-          return [
-            ...postsArr,
-            {
-              feedId: newFeedId,
-              title: el.querySelector('title').textContent,
-              link: el.querySelector('link').textContent,
-              description: el.querySelector('description').textContent,
-              pubDate: el.querySelector('pubDate').textContent,
-              isRead: false,
-              id,
-            },
-          ];
-        }, []);
-
-        const newPosts = _.sortBy(newPostsUnsorted, (post) => (post.pubDate))
-          .map((post, index) => {
-            const id = newPostId + index;
-            return { ...post, id };
-          });
 
         const feed = {
           id: newFeedId,
@@ -102,12 +97,25 @@ export default () => {
         };
 
         rss.feeds = [...rss.feeds, feed];
-        ui.input.isValid = true;
-        ui.message = i18next.t('yup.success');
+
+        const lastPostId = _.isEmpty(posts) ? 0 : _.last(posts).id;
+        const newPostId = lastPostId + 1;
+
+        const newPostsUnsorted = parsePostsFromRssHtml(rssHtml, newPostId, newFeedId);
+
+        const newPosts = _.sortBy(newPostsUnsorted, (post) => (post.pubDate))
+          .map((post, index) => {
+            const id = newPostId + index;
+            return { ...post, id };
+          });
+
         rss.posts = [
           ...rss.posts,
           ...newPosts,
         ];
+
+        ui.input.isValid = true;
+        ui.message = i18next.t('yup.success');
 
         render(state);
       })
