@@ -15,9 +15,6 @@ Web application for reading Rich Site Summary (RSS).
 Put rss-link into form then application will display RSS articles.
 Every 5 seconds it checks for RSS-feeds updates.
 
-### Project demo
-https://frontend-project-lvl3-one-umber.vercel.app/
-
 ### Project installation
 
 ```
