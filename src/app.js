@@ -35,6 +35,14 @@ export default () => {
 
   const { ui, rss, elements } = state;
 
+  const getRssHtml = (url) => {
+    const parser = new DOMParser();
+
+    return axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+      .then((response) => response.data)
+      .then((data) => parser.parseFromString(data.contents, 'text/xml'));
+  };
+
   const getNewRSS = (url) => {
     if (!url) {
       state.ui.input.isValid = false;
@@ -42,11 +50,7 @@ export default () => {
       return;
     }
 
-    const parser = new DOMParser();
-
-    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
-      .then((response) => response.data)
-      .then((data) => parser.parseFromString(data.contents, 'text/xml'))
+    getRssHtml(url)
       .catch((e) => {
         state.ui.input.isValid = false;
         state.ui.message = i18next.t('yup.errors.networkError');
@@ -160,11 +164,7 @@ export default () => {
   const updateRSS = () => rss.feeds.forEach((feed, index) => {
     const { url } = feed;
 
-    const parser = new DOMParser();
-
-    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
-      .then((response) => response.data)
-      .then((data) => parser.parseFromString(data.contents, 'text/xml'))
+    getRssHtml(url)
       .then((rssHtml) => parseUpdatedFeedHtml(rssHtml, feed, index))
       .then(renderUpdatedFeed)
       .catch((e) => { throw (e); });
