@@ -15,6 +15,9 @@ Web application for reading Rich Site Summary (RSS).
 Put rss-link into form then application will display RSS articles.
 Every 5 seconds it checks for RSS-feeds updates.
 
+### Project demo
+https://frontend-project-lvl3-one-umber.vercel.app/
+
 ### Project installation
 
 ```
@@ -22,9 +25,9 @@ git clone https://github.com/anton2009danilov/frontend-project-lvl3
 
 cd frontend-project-lvl3
 
-npm ci
+make install
 
 make serve
 
-open url "http://localhost:8080/" in browser
 ```
+Project is running at: http://localhost:8080/
