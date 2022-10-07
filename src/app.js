@@ -43,10 +43,28 @@ export default () => {
       .then((data) => parser.parseFromString(data.contents, 'text/xml'));
   };
 
-  const parsePostsFromRssHtml = (rssHtml, newPostId, newFeedId) => {
-    const postElements = rssHtml.querySelectorAll('item');
+  const parseFeedFromRssHtml = (rssHtml, lastFeedId, url) => {
+    const newFeedId = lastFeedId + 1;
 
-    return Array.from(postElements).reduce((postsArr, el, index) => {
+    const title = rssHtml.querySelector('title').textContent;
+    const description = rssHtml.querySelector('description').textContent;
+    const pubDate = rssHtml.querySelector('pubDate').textContent;
+
+    return {
+      id: newFeedId,
+      url,
+      title,
+      description,
+      pubDate,
+    };
+  };
+
+  const parsePostsFromRssHtml = (rssHtml, lastPostId, lastFeedId) => {
+    const postElements = rssHtml.querySelectorAll('item');
+    const newPostId = lastPostId + 1;
+    const newFeedId = lastFeedId + 1;
+
+    const newPostsUnsorted = Array.from(postElements).reduce((postsArr, el, index) => {
       const id = newPostId + index;
 
       return [
@@ -62,6 +80,12 @@ export default () => {
         },
       ];
     }, []);
+
+    return _.sortBy(newPostsUnsorted, (post) => (post.pubDate))
+      .map((post, index) => {
+        const id = newPostId + index;
+        return { ...post, id };
+      });
   };
 
   const getNewRSS = (url) => {
@@ -82,33 +106,11 @@ export default () => {
         const { feeds, posts } = rss;
 
         const lastFeedId = _.isEmpty(feeds) ? 0 : _.last(feeds).id;
-        const newFeedId = lastFeedId + 1;
-
-        const title = rssHtml.querySelector('title').textContent;
-        const description = rssHtml.querySelector('description').textContent;
-        const pubDate = rssHtml.querySelector('pubDate').textContent;
-
-        const feed = {
-          id: newFeedId,
-          url,
-          title,
-          description,
-          pubDate,
-        };
-
+        const feed = parseFeedFromRssHtml(rssHtml, lastFeedId, url);
         rss.feeds = [...rss.feeds, feed];
 
         const lastPostId = _.isEmpty(posts) ? 0 : _.last(posts).id;
-        const newPostId = lastPostId + 1;
-
-        const newPostsUnsorted = parsePostsFromRssHtml(rssHtml, newPostId, newFeedId);
-
-        const newPosts = _.sortBy(newPostsUnsorted, (post) => (post.pubDate))
-          .map((post, index) => {
-            const id = newPostId + index;
-            return { ...post, id };
-          });
-
+        const newPosts = parsePostsFromRssHtml(rssHtml, lastPostId, lastFeedId);
         rss.posts = [
           ...rss.posts,
           ...newPosts,
