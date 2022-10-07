@@ -86,7 +86,7 @@ export default () => {
     const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
 
     if (!_.isEmpty(diffPosts)) {
-      rss.feeds[index] = { feed };
+      rss.feeds[index] = { ...feed };
 
       const lastPostId = _.isEmpty(rss.posts) ? 0 : _.last(rss.posts).id;
 
@@ -110,7 +110,10 @@ export default () => {
 
     getRssHtml(url)
       .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
-      .then(renderUpdatedRss)
+      .then((data) => {
+        const [updatedFeed, updatedFeedIndex, posts] = data;
+        renderUpdatedRss(updatedFeed, updatedFeedIndex, posts);
+      })
       .catch((e) => { throw (e); });
   });
 
