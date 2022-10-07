@@ -35,6 +35,52 @@ export default () => {
 
   const { ui, rss, elements } = state;
 
+  const handleNetworkError = (e) => {
+    state.ui.input.isValid = false;
+    state.ui.message = i18next.t('yup.errors.networkError');
+    render(state);
+    throw (e);
+  };
+
+  const hanldeInvalidRssError = (e) => {
+    if (e.message !== 'Network Error') {
+      ui.input.isValid = false;
+      ui.message = i18next.t('yup.errors.invalidRss');
+      render(state);
+      throw (e);
+    }
+  };
+
+  const handleInvalidUrlError = () => {
+    ui.message = i18next.t('yup.errors.invalidUrl');
+    ui.input.isValid = false;
+    render(state);
+  };
+
+  const checkForEmptyRssUrlError = (url) => {
+    if (!url) {
+      state.ui.input.isValid = false;
+      state.ui.message = i18next.t('yup.errors.emptyRssUrl');
+      return true;
+    }
+
+    return false;
+  };
+
+  const checkForAlreadyExistsError = (url) => {
+    const { feeds } = state.rss;
+    const isRepeated = feeds.some((feed) => feed.url === url);
+
+    if (isRepeated) {
+      ui.message = i18next.t('yup.errors.alreadyExists');
+      ui.input.isValid = false;
+      render(state);
+      return true;
+    }
+
+    return false;
+  };
+
   const getRssHtml = (url) => {
     const parser = new DOMParser();
 
@@ -89,19 +135,12 @@ export default () => {
   };
 
   const getNewRSS = (url) => {
-    if (!url) {
-      state.ui.input.isValid = false;
-      state.ui.message = i18next.t('yup.errors.emptyRSS');
+    if (checkForEmptyRssUrlError(url)) {
       return;
     }
 
     getRssHtml(url)
-      .catch((e) => {
-        state.ui.input.isValid = false;
-        state.ui.message = i18next.t('yup.errors.networkError');
-        render(state);
-        throw (e);
-      })
+      .catch(handleNetworkError)
       .then((rssHtml) => {
         const { feeds, posts } = rss;
 
@@ -121,14 +160,7 @@ export default () => {
 
         render(state);
       })
-      .catch((e) => {
-        if (e.message !== 'Network Error') {
-          ui.input.isValid = false;
-          ui.message = i18next.t('yup.errors.invalidRSS');
-          render(state);
-          throw (e);
-        }
-      });
+      .catch(hanldeInvalidRssError);
   };
 
   const parseUpdatedFeedHtml = (rssHtml, feed, index) => {
@@ -196,25 +228,15 @@ export default () => {
     const url = formData.get('url');
 
     validateUrl({ url })
-      .then((data) => {
-        const { feeds } = state.rss;
-        const isRepeated = feeds.some((feed) => feed.url === data.url);
-
-        if (isRepeated) {
-          ui.message = i18next.t('yup.errors.alreadyExists');
-          ui.input.isValid = false;
-          render(state);
+      .then(() => {
+        if (checkForAlreadyExistsError(url)) {
           return;
         }
 
-        getNewRSS(data.url);
+        getNewRSS(url);
         render(state);
       })
-      .catch(() => {
-        ui.message = i18next.t('yup.errors.invalidURL');
-        ui.input.isValid = false;
-        render(state);
-      });
+      .catch(handleInvalidUrlError);
   });
 
   render(state);

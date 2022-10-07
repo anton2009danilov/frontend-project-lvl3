@@ -5,9 +5,9 @@ export default {
       rssView: 'Просмотр',
       errors: {
         alreadyExists: 'RSS уже существует',
-        invalidURL: 'Ссылка должна быть валидным URL',
-        invalidRSS: 'Ресурс не содержит валидный RSS',
-        emptyRSS: 'Не должно быть пустым',
+        invalidUrl: 'Ссылка должна быть валидным URL',
+        invalidRss: 'Ресурс не содержит валидный RSS',
+        emptyRssUrl: 'Не должно быть пустым',
         networkError: 'Ошибка сети',
       },
     },
