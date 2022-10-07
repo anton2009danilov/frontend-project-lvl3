@@ -14,18 +14,22 @@ i18next.init({
 export default (state) => {
   const { elements, rss } = state;
 
+  const renderInputValidity = () => {
+    if (state.ui.input.isValid) {
+      elements.input.classList.remove('is-invalid');
+      elements.feedback.classList.remove('text-danger');
+      elements.feedback.classList.add('text-success');
+      return;
+    }
+
+    elements.input.classList.add('is-invalid');
+    elements.feedback.classList.add('text-danger');
+    elements.feedback.classList.remove('text-success');
+  };
+
   const watchedState = onChange(state, (path, value) => {
     if (path === 'ui.input.isValid') {
-      if (value) {
-        elements.input.classList.remove('is-invalid');
-        elements.feedback.classList.remove('text-danger');
-        elements.feedback.classList.add('text-success');
-        return;
-      }
-
-      elements.input.classList.add('is-invalid');
-      elements.feedback.classList.add('text-danger');
-      elements.feedback.classList.remove('text-success');
+      renderInputValidity();
     }
 
     if (path === 'ui.message') {
@@ -118,19 +122,6 @@ export default (state) => {
         }
       });
     });
-  };
-
-  const renderInputValidity = () => {
-    if (state.ui.input.isValid) {
-      elements.input.classList.remove('is-invalid');
-      elements.feedback.classList.remove('text-danger');
-      elements.feedback.classList.add('text-success');
-      return;
-    }
-
-    elements.input.classList.add('is-invalid');
-    elements.feedback.classList.add('text-danger');
-    elements.feedback.classList.remove('text-success');
   };
 
   const renderView = () => {
