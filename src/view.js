@@ -178,44 +178,43 @@ const render = (state) => {
     elements.feedback.textContent = state.ui.message;
   };
 
-  const updateRss = (feed, index, posts) => {
-    const { id } = feed;
-    const currentPosts = _.filter(rss.posts, ({ feedId }) => feedId === id);
-    const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
+  const updateRss = () => {
+    state.rss.feeds.forEach((feed, index) => {
+      const { url } = feed;
 
-    if (!_.isEmpty(diffPosts)) {
-      rss.feeds[index] = { ...feed };
+      getRssHtml(url)
+        .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
+        .then(([updatedFeed, updatedFeedIndex, posts]) => {
+          const { id } = updatedFeed;
+          const currentPosts = _.filter(rss.posts, ({ feedId }) => feedId === id);
+          const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
 
-      const lastPostId = _.isEmpty(rss.posts) ? 0 : _.last(rss.posts).id;
+          if (!_.isEmpty(diffPosts)) {
+            rss.feeds[updatedFeedIndex] = { ...updatedFeed };
 
-      const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
-        .map((post, postIndex) => {
-          const newPostId = lastPostId + postIndex + 1;
-          return { ...post, id: newPostId };
-        });
+            const lastPostId = _.isEmpty(rss.posts) ? 0 : _.last(rss.posts).id;
 
-      rss.posts = [
-        ...rss.posts,
-        ...newPosts,
-      ];
-    }
+            const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
+              .map((post, postIndex) => {
+                const newPostId = lastPostId + postIndex + 1;
+                return { ...post, id: newPostId };
+              });
+
+            rss.posts = [
+              ...rss.posts,
+              ...newPosts,
+            ];
+          }
+        })
+        .catch((e) => { throw (e); });
+    });
   };
 
   const watchForUpdates = () => {
     const timeStep = 5000;
     setTimeout(watchForUpdates, timeStep);
 
-    state.rss.feeds.forEach((feed, index) => {
-      const { url } = feed;
-
-      getRssHtml(url)
-        .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
-        .then((data) => {
-          const [updatedFeed, updatedFeedIndex, posts] = data;
-          updateRss(updatedFeed, updatedFeedIndex, posts);
-        })
-        .catch((e) => { throw (e); });
-    });
+    updateRss();
   };
 
   if (!state.isAppRunning) {
