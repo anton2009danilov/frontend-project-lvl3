@@ -27,7 +27,12 @@ export default (state) => {
     elements.feedback.classList.remove('text-success');
   };
 
-  const watchedState = onChange(state, () => {});
+  const watchedState = onChange(state, (path, value) => {
+    if (path === 'ui.form.isRefreshed' && value) {
+      elements.form.reset();
+      elements.input.focus();
+    }
+  });
 
   const createFeedHtml = () => `
     <div class="card border-0">
@@ -130,6 +135,10 @@ export default (state) => {
       renderAllFeeds();
       renderAllPosts();
       renderInputValidity();
+    }
+
+    if (!state.ui.form.isRefreshed) {
+      watchedState.ui.form.isRefreshed = true;
     }
 
     elements.feedback.textContent = state.ui.message;

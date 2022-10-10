@@ -23,6 +23,9 @@ const validateUrl = (url) => {
 export default () => {
   const state = {
     ui: {
+      form: {
+        isRefreshed: true,
+      },
       input: {
         isValid: true,
       },
@@ -127,8 +130,7 @@ export default () => {
   elements.form.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
-    event.target.reset();
-    elements.input.focus();
+    state.ui.form.isRefreshed = false;
 
     const url = formData.get('url');
 
