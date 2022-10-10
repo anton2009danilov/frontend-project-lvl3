@@ -124,10 +124,10 @@ export default () => {
     updateRSS();
   };
 
-  elements.form.addEventListener('submit', (el) => {
-    el.preventDefault();
-    const formData = new FormData(el.target);
-    el.target.reset();
+  elements.form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    event.target.reset();
     elements.input.focus();
 
     const url = formData.get('url');
