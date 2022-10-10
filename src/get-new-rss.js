@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import i18next from 'i18next';
 import getRssHtml from './get-rss-html.js';
 import { parseFeedFromRssHtml, parsePostsFromRssHtml } from './parsers.js';
