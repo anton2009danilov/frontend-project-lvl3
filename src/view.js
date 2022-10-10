@@ -1,7 +1,21 @@
 import _ from 'lodash';
 import onChange from 'on-change';
+import { object, string } from 'yup';
 import i18next from 'i18next';
+import {
+  handleInvalidUrlError,
+  checkForAlreadyExistsError,
+} from './error-handlers.js';
+import getNewRSS from './get-new-rss.js';
 import ru from './locales/ru.js';
+
+const validateUrl = (url) => {
+  const urlSchema = object({
+    url: string().url(),
+  });
+
+  return urlSchema.validate(url);
+};
 
 i18next.init({
   lng: 'ru',
@@ -11,8 +25,16 @@ i18next.init({
   },
 });
 
+const elements = {
+  form: document.querySelector('form'),
+  input: document.querySelector('input'),
+  feedback: document.querySelector('.feedback'),
+  feeds: document.querySelector('div.feeds'),
+  posts: document.querySelector('div.posts'),
+};
+
 export default (state) => {
-  const { elements, rss } = state;
+  const { rss } = state;
 
   const renderInputValidity = () => {
     if (state.ui.input.isValid) {
@@ -143,6 +165,25 @@ export default (state) => {
 
     elements.feedback.textContent = state.ui.message;
   };
+
+  elements.form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    state.ui.form.isRefreshed = false;
+
+    const url = formData.get('url');
+
+    validateUrl({ url })
+      .then(() => {
+        if (checkForAlreadyExistsError(state, url)) {
+          return;
+        }
+
+        getNewRSS(url, watchedState, renderView);
+      })
+      .then(() => renderView())
+      .catch((e) => handleInvalidUrlError(state, e));
+  });
 
   renderView();
 };

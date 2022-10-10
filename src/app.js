@@ -1,24 +1,7 @@
-import axios from 'axios';
 import _ from 'lodash';
-import i18next from 'i18next';
-import { object, string } from 'yup';
-import { parseFeedFromRssHtml, parsePostsFromRssHtml, parseUpdatedRssHtml } from './parsers.js';
-import {
-  handleNetworkError,
-  hanldeInvalidRssError,
-  handleInvalidUrlError,
-  checkForEmptyRssUrlError,
-  checkForAlreadyExistsError,
-} from './error-handlers.js';
+import { parseUpdatedRssHtml } from './parsers.js';
+import getRssHtml from './get-rss-html.js';
 import render from './view.js';
-
-const validateUrl = (url) => {
-  const urlSchema = object({
-    url: string().url(),
-  });
-
-  return urlSchema.validate(url);
-};
 
 export default () => {
   const state = {
@@ -35,53 +18,9 @@ export default () => {
       feeds: [],
       posts: [],
     },
-    elements: {
-      form: document.querySelector('form'),
-      input: document.querySelector('input'),
-      feedback: document.querySelector('.feedback'),
-      feeds: document.querySelector('div.feeds'),
-      posts: document.querySelector('div.posts'),
-    },
   };
 
-  const { ui, rss, elements } = state;
-
-  const getRssHtml = (url) => {
-    const parser = new DOMParser();
-
-    return axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
-      .then((response) => response.data)
-      .then((data) => parser.parseFromString(data.contents, 'text/xml'));
-  };
-
-  const getNewRSS = (url) => {
-    if (checkForEmptyRssUrlError(state, url)) {
-      return;
-    }
-
-    getRssHtml(url)
-      .catch((e) => handleNetworkError(state, e))
-      .then((rssHtml) => {
-        const { feeds, posts } = rss;
-
-        const lastFeedId = _.isEmpty(feeds) ? 0 : _.last(feeds).id;
-        const feed = parseFeedFromRssHtml(rssHtml, lastFeedId, url);
-        rss.feeds = [...rss.feeds, feed];
-
-        const lastPostId = _.isEmpty(posts) ? 0 : _.last(posts).id;
-        const newPosts = parsePostsFromRssHtml(rssHtml, lastPostId, lastFeedId);
-        rss.posts = [
-          ...rss.posts,
-          ...newPosts,
-        ];
-
-        ui.input.isValid = true;
-        ui.message = i18next.t('yup.success');
-
-        render(state);
-      })
-      .catch((e) => hanldeInvalidRssError(state, e));
-  };
+  const { rss } = state;
 
   const renderUpdatedRss = (feed, index, posts) => {
     const { id } = feed;
@@ -126,25 +65,6 @@ export default () => {
 
     updateRSS();
   };
-
-  elements.form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    state.ui.form.isRefreshed = false;
-
-    const url = formData.get('url');
-
-    validateUrl({ url })
-      .then(() => {
-        if (checkForAlreadyExistsError(state, url)) {
-          return;
-        }
-
-        getNewRSS(url);
-      })
-      .then(() => render(state))
-      .catch((e) => handleInvalidUrlError(state, e));
-  });
 
   render(state);
   watchForUpdates();
