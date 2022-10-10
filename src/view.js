@@ -5,10 +5,10 @@ import i18next from 'i18next';
 import {
   handleInvalidUrlError,
   checkForAlreadyExistsError,
-} from './error-handlers.js';
-import getNewRSS from './get-new-rss.js';
-import { parseUpdatedRssHtml } from './parsers.js';
-import getRssHtml from './get-rss-html.js';
+} from './modules/error-handlers.js';
+import getNewRSS from './modules/get-new-rss.js';
+import { parseUpdatedRssHtml } from './modules/parsers.js';
+import getRssHtml from './modules/get-rss-html.js';
 import ru from './locales/ru.js';
 
 const validateUrl = (url) => {
