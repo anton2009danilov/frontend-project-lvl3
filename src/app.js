@@ -139,8 +139,8 @@ export default () => {
         }
 
         getNewRSS(url);
-        render(state);
       })
+      .then(() => render(state))
       .catch((e) => handleInvalidUrlError(state, e));
   });
 
