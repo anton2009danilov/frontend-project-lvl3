@@ -7,6 +7,8 @@ import {
   checkForAlreadyExistsError,
 } from './error-handlers.js';
 import getNewRSS from './get-new-rss.js';
+import { parseUpdatedRssHtml } from './parsers.js';
+import getRssHtml from './get-rss-html.js';
 import ru from './locales/ru.js';
 
 const validateUrl = (url) => {
@@ -33,9 +35,7 @@ const elements = {
   posts: document.querySelector('div.posts'),
 };
 
-export default (state) => {
-  const { rss } = state;
-
+const render = (state) => {
   const renderInputValidity = () => {
     if (state.ui.input.isValid) {
       elements.input.classList.remove('is-invalid');
@@ -53,8 +53,20 @@ export default (state) => {
     if (path === 'ui.form.isRefreshed' && value) {
       elements.form.reset();
       elements.input.focus();
+      return;
+    }
+
+    if (path === 'ui.message') {
+      render(state);
+      return;
+    }
+
+    if (path === 'rss.posts') {
+      render(state);
     }
   });
+
+  const { rss } = watchedState;
 
   const createFeedHtml = () => `
     <div class="card border-0">
@@ -105,7 +117,7 @@ export default (state) => {
     </button>
   `;
 
-  const renderSinglePost = (post, postIndex, render) => {
+  const renderSinglePost = (post, postIndex, renderFn) => {
     const postElement = document.createElement('li');
     postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     postElement.innerHTML = createPostHtml(post);
@@ -125,7 +137,7 @@ export default (state) => {
 
         watchedState.ui.input.isValid = true;
         watchedState.ui.message = i18next.t('yup.rssView');
-        render();
+        renderFn();
       }
     });
 
@@ -166,24 +178,71 @@ export default (state) => {
     elements.feedback.textContent = state.ui.message;
   };
 
-  elements.form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    state.ui.form.isRefreshed = false;
+  const updateRss = (feed, index, posts) => {
+    const { id } = feed;
+    const currentPosts = _.filter(rss.posts, ({ feedId }) => feedId === id);
+    const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
 
-    const url = formData.get('url');
+    if (!_.isEmpty(diffPosts)) {
+      rss.feeds[index] = { ...feed };
 
-    validateUrl({ url })
-      .then(() => {
-        if (checkForAlreadyExistsError(state, url)) {
-          return;
-        }
+      const lastPostId = _.isEmpty(rss.posts) ? 0 : _.last(rss.posts).id;
 
-        getNewRSS(url, watchedState, renderView);
-      })
-      .then(() => renderView())
-      .catch((e) => handleInvalidUrlError(state, e));
-  });
+      const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
+        .map((post, postIndex) => {
+          const newPostId = lastPostId + postIndex + 1;
+          return { ...post, id: newPostId };
+        });
+
+      rss.posts = [
+        ...rss.posts,
+        ...newPosts,
+      ];
+    }
+  };
+
+  const watchForUpdates = () => {
+    const timeStep = 5000;
+    setTimeout(watchForUpdates, timeStep);
+
+    state.rss.feeds.forEach((feed, index) => {
+      const { url } = feed;
+
+      getRssHtml(url)
+        .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
+        .then((data) => {
+          const [updatedFeed, updatedFeedIndex, posts] = data;
+          updateRss(updatedFeed, updatedFeedIndex, posts);
+        })
+        .catch((e) => { throw (e); });
+    });
+  };
+
+  if (!state.isAppRunning) {
+    elements.form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      watchedState.ui.form.isRefreshed = false;
+
+      const url = formData.get('url');
+
+      validateUrl({ url })
+        .then(() => {
+          if (checkForAlreadyExistsError(watchedState, url)) {
+            return;
+          }
+
+          getNewRSS(url, watchedState);
+        })
+        .catch((e) => handleInvalidUrlError(watchedState, e));
+    });
+
+    watchForUpdates();
+
+    watchedState.isAppRunning = true;
+  }
 
   renderView();
 };
+
+export default render;

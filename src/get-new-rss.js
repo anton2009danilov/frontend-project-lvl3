@@ -8,15 +8,15 @@ import {
   checkForEmptyRssUrlError,
 } from './error-handlers.js';
 
-const getNewRSS = (url, state, render) => {
-  const { ui, rss } = state;
+const getNewRSS = (url, watchedState) => {
+  const { ui, rss } = watchedState;
 
-  if (checkForEmptyRssUrlError(state, url)) {
+  if (checkForEmptyRssUrlError(watchedState, url)) {
     return;
   }
 
   getRssHtml(url)
-    .catch((e) => handleNetworkError(state, e))
+    .catch((e) => handleNetworkError(watchedState, e))
     .then((rssHtml) => {
       const { feeds, posts } = rss;
 
@@ -33,10 +33,8 @@ const getNewRSS = (url, state, render) => {
 
       ui.input.isValid = true;
       ui.message = i18next.t('yup.success');
-
-      render();
     })
-    .catch((e) => hanldeInvalidRssError(state, e));
+    .catch((e) => hanldeInvalidRssError(watchedState, e));
 };
 
 export default getNewRSS;

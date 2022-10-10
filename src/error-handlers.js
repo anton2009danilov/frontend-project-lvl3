@@ -1,48 +1,41 @@
-import onChange from 'on-change';
 import i18next from 'i18next';
-import render from './view.js';
 
-const changeUiState = (state, message) => {
-  const watchedState = onChange(state, () => {});
+const changeUiState = (watchedState, message) => {
   watchedState.ui.input.isValid = false;
   watchedState.ui.message = message;
 };
 
-const handleNetworkError = (state, e) => {
-  changeUiState(state, i18next.t('yup.errors.networkError'));
-  render(state);
+const handleNetworkError = (watchedState, e) => {
+  changeUiState(watchedState, i18next.t('yup.errors.networkError'));
   throw (e);
 };
 
-const hanldeInvalidRssError = (state, e) => {
+const hanldeInvalidRssError = (watchedState, e) => {
   if (e.message !== 'Network Error') {
-    changeUiState(state, i18next.t('yup.errors.invalidRss'));
-    render(state);
+    changeUiState(watchedState, i18next.t('yup.errors.invalidRss'));
     throw (e);
   }
 };
 
-const handleInvalidUrlError = (state) => {
-  changeUiState(state, i18next.t('yup.errors.invalidUrl'));
-  render(state);
+const handleInvalidUrlError = (watchedState) => {
+  changeUiState(watchedState, i18next.t('yup.errors.invalidUrl'));
 };
 
-const checkForEmptyRssUrlError = (state, url) => {
+const checkForEmptyRssUrlError = (watchedState, url) => {
   if (!url) {
-    changeUiState(state, i18next.t('yup.errors.emptyRssUrl'));
+    changeUiState(watchedState, i18next.t('yup.errors.emptyRssUrl'));
     return true;
   }
 
   return false;
 };
 
-const checkForAlreadyExistsError = (state, url) => {
-  const { feeds } = state.rss;
+const checkForAlreadyExistsError = (watchedState, url) => {
+  const { feeds } = watchedState.rss;
   const isRepeated = feeds.some((feed) => feed.url === url);
 
   if (isRepeated) {
-    changeUiState(state, i18next.t('yup.errors.alreadyExists'));
-    render(state);
+    changeUiState(watchedState, i18next.t('yup.errors.alreadyExists'));
     return true;
   }
 
