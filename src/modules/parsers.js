@@ -1,14 +1,11 @@
 import _ from 'lodash';
 
-const parseFeedFromRssHtml = (rssHtml, lastFeedId, url) => {
-  const newFeedId = lastFeedId + 1;
-
+const parseFeedFromRssHtml = (rssHtml, url) => {
   const title = rssHtml.querySelector('title').textContent;
   const description = rssHtml.querySelector('description').textContent;
   const pubDate = rssHtml.querySelector('pubDate').textContent;
 
   return {
-    id: newFeedId,
     url,
     title,
     description,
@@ -16,36 +13,28 @@ const parseFeedFromRssHtml = (rssHtml, lastFeedId, url) => {
   };
 };
 
-const parsePostsFromRssHtml = (rssHtml, lastPostId, lastFeedId) => {
+const parsePostsFromRssHtml = (rssHtml) => {
   const postElements = rssHtml.querySelectorAll('item');
-  const newPostId = lastPostId + 1;
-  const newFeedId = lastFeedId + 1;
 
-  const newPostsUnsorted = Array.from(postElements).reduce((postsArr, el, index) => {
-    const id = newPostId + index;
-
-    return [
+  const newPosts = Array.from(postElements).reduce(
+    (postsArr, el) => _.concat(
       ...postsArr,
       {
-        feedId: newFeedId,
         title: el.querySelector('title').textContent,
         link: el.querySelector('link').textContent,
         description: el.querySelector('description').textContent,
         pubDate: el.querySelector('pubDate').textContent,
         isRead: false,
-        id,
       },
-    ];
-  }, []);
+    ),
+    [],
+  );
 
-  return _.sortBy(newPostsUnsorted, (post) => (post.pubDate))
-    .map((post, index) => {
-      const id = newPostId + index;
-      return { ...post, id };
-    });
+  return newPosts;
 };
 
 const parseUpdatedRssHtml = (rssHtml, feed, index) => {
+  console.log(rssHtml);
   const { id } = feed;
   const postElements = rssHtml.querySelectorAll('item');
 
@@ -63,4 +52,9 @@ const parseUpdatedRssHtml = (rssHtml, feed, index) => {
   return [updatedFeed, index, posts];
 };
 
-export { parseFeedFromRssHtml, parsePostsFromRssHtml, parseUpdatedRssHtml };
+const parseRssFromHtml = (html, url) => ({
+  feeds: [parseFeedFromRssHtml(html, url)],
+  posts: parsePostsFromRssHtml(html),
+});
+
+export { parseRssFromHtml, parseUpdatedRssHtml };

@@ -6,7 +6,7 @@ import {
   handleInvalidUrlError,
   checkForAlreadyExistsError,
 } from './modules/error-handlers.js';
-import getNewRSS from './modules/get-new-rss.js';
+import addNewRSS from './modules/add-new-rss.js';
 import { parseUpdatedRssHtml } from './modules/parsers.js';
 import getRssHtml from './modules/get-rss-html.js';
 import ru from './locales/ru.js';
@@ -61,7 +61,7 @@ const render = (state) => {
       return;
     }
 
-    if (path === 'rss.posts') {
+    if (path === 'rss') {
       render(state);
     }
   });
@@ -184,13 +184,13 @@ const render = (state) => {
 
       getRssHtml(url)
         .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
-        .then(([updatedFeed, updatedFeedIndex, posts]) => {
-          const { id } = updatedFeed;
-          const currentPosts = _.filter(rss.posts, ({ feedId }) => feedId === id);
+        .then(([changedFeed, updatedFeedIndex, posts]) => {
+          const { id } = changedFeed;
+          const currentPosts = _.filter(state.rss.posts, ({ feedId }) => feedId === id);
           const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
 
           if (!_.isEmpty(diffPosts)) {
-            rss.feeds[updatedFeedIndex] = { ...updatedFeed };
+            watchedState.rss.feeds[updatedFeedIndex] = { ...changedFeed };
 
             const lastPostId = _.isEmpty(rss.posts) ? 0 : _.last(rss.posts).id;
 
@@ -200,10 +200,13 @@ const render = (state) => {
                 return { ...post, id: newPostId };
               });
 
-            rss.posts = [
-              ...rss.posts,
-              ...newPosts,
-            ];
+            const updatedFeeds = _.set(state.rss.feeds, updatedFeedIndex, { ...changedFeed });
+            const updatedPosts = _.concat(state.rss.posts, newPosts);
+
+            watchedState.rss = {
+              feeds: updatedFeeds,
+              posts: updatedPosts,
+            };
           }
         })
         .catch((e) => { throw (e); });
@@ -228,10 +231,10 @@ const render = (state) => {
       validateUrl({ url })
         .then(() => {
           if (checkForAlreadyExistsError(watchedState, url)) {
-            return;
+            return false;
           }
 
-          getNewRSS(url, watchedState);
+          return addNewRSS(watchedState, url);
         })
         .catch((e) => handleInvalidUrlError(watchedState, e));
     });
