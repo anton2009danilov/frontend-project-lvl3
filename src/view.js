@@ -35,40 +35,20 @@ const elements = {
   posts: document.querySelector('div.posts'),
 };
 
-const render = (state) => {
-  const renderInputValidity = () => {
-    if (state.ui.input.isValid) {
-      elements.input.classList.remove('is-invalid');
-      elements.feedback.classList.remove('text-danger');
-      elements.feedback.classList.add('text-success');
-      return;
-    }
+const renderInputValidity = (isValid) => {
+  if (isValid) {
+    elements.input.classList.remove('is-invalid');
+    elements.feedback.classList.remove('text-danger');
+    elements.feedback.classList.add('text-success');
+    return;
+  }
 
-    elements.input.classList.add('is-invalid');
-    elements.feedback.classList.add('text-danger');
-    elements.feedback.classList.remove('text-success');
-  };
+  elements.input.classList.add('is-invalid');
+  elements.feedback.classList.add('text-danger');
+  elements.feedback.classList.remove('text-success');
+};
 
-  const watchedState = onChange(state, (path, value) => {
-    if (path === 'ui.form.isRefreshed' && value) {
-      elements.form.reset();
-      elements.input.focus();
-      return;
-    }
-
-    if (path === 'ui.message') {
-      render(state);
-      return;
-    }
-
-    if (path === 'rss') {
-      render(state);
-    }
-  });
-
-  const { rss } = state;
-
-  const createFeedHtml = () => `
+const createFeedHtml = () => `
     <div class="card border-0">
       <div class="card-body">
       <h2 class="card-title h4">Фиды</h2>
@@ -77,25 +57,7 @@ const render = (state) => {
     </div>
   `;
 
-  const renderAllFeeds = () => {
-    const { feeds: feedsContainerElement } = elements;
-
-    feedsContainerElement.innerHTML = createFeedHtml();
-
-    const feedsList = feedsContainerElement.querySelector('ul');
-
-    rss.feeds.forEach((feed) => {
-      const li = document.createElement('li');
-      li.classList.add('list-group-item', 'border-0', 'border-end-0');
-      li.innerHTML = `
-        <h3 class="h6 m-0">${feed.title}</h3>
-        <p class="m-0 small text-black-50">${feed.description}</p>
-      `;
-      feedsList.append(li);
-    });
-  };
-
-  const createPostHtml = (post) => `
+const createPostHtml = (post) => `
     <a 
       href="${post.link}"
       class="${post.isRead ? 'fw-normal' : 'fw-bold'}"
@@ -117,12 +79,49 @@ const render = (state) => {
     </button>
   `;
 
-  const renderSinglePost = (post, postIndex, renderFn) => {
-    const postElement = document.createElement('li');
-    postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-    postElement.innerHTML = createPostHtml(post);
+const renderFeedsList = (feeds) => {
+  const { feeds: feedsContainerElement } = elements;
 
-    postElement.addEventListener('click', (e) => {
+  feedsContainerElement.innerHTML = createFeedHtml();
+
+  const feedsList = feedsContainerElement.querySelector('ul');
+
+  feeds.forEach((feed) => {
+    const li = document.createElement('li');
+    li.classList.add('list-group-item', 'border-0', 'border-end-0');
+    li.innerHTML = `
+        <h3 class="h6 m-0">${feed.title}</h3>
+        <p class="m-0 small text-black-50">${feed.description}</p>
+      `;
+    feedsList.append(li);
+  });
+};
+
+const renderSinglePost = (post) => {
+  const postElement = document.createElement('li');
+  postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+  postElement.innerHTML = createPostHtml(post);
+
+  return postElement;
+};
+
+const renderPostsList = (watchedState) => {
+  const { posts: postsContainerElement } = elements;
+
+  postsContainerElement.innerHTML = `
+    <div class="card border-0">
+      <div class="card-body">
+        <h2 class="card-title h4">Посты</h2>
+      </div>
+      <ul class="list-group border-0 rounded-0"></ul>
+    </div>
+  `;
+
+  const postList = postsContainerElement.querySelector('ul');
+
+  watchedState.rss.posts.forEach((post, postIndex) => {
+    const view = renderSinglePost(post);
+    view.addEventListener('click', (e) => {
       const modal = document.getElementById('modal');
       const modalTitle = modal.querySelector('.modal-title');
       const modalBody = modal.querySelector('.modal-body');
@@ -137,38 +136,38 @@ const render = (state) => {
 
         watchedState.ui.input.isValid = true;
         watchedState.ui.message = i18next.t('yup.rssView');
-        renderFn();
+        renderPostsList(watchedState);
       }
     });
+    postList.prepend(view);
+  });
+};
 
-    return postElement;
-  };
+const render = (state) => {
+  const watchedState = onChange(state, (path, value) => {
+    if (path === 'ui.form.isRefreshed' && value) {
+      elements.form.reset();
+      elements.input.focus();
+      return;
+    }
 
-  const renderAllPosts = () => {
-    const { posts: postsContainerElement } = elements;
+    if (path === 'ui.message') {
+      render(state);
+      return;
+    }
 
-    postsContainerElement.innerHTML = `
-      <div class="card border-0">
-        <div class="card-body">
-          <h2 class="card-title h4">Посты</h2>
-        </div>
-        <ul class="list-group border-0 rounded-0"></ul>
-      </div>
-    `;
+    if (path === 'rss') {
+      render(state);
+    }
+  });
 
-    const postList = postsContainerElement.querySelector('ul');
-
-    rss.posts.forEach((post, postIndex) => {
-      const view = renderSinglePost(post, postIndex, renderAllPosts);
-      postList.prepend(view);
-    });
-  };
+  const { ui, rss } = state;
 
   const renderView = () => {
-    if (!_.isEmpty(state.rss.feeds)) {
-      renderAllFeeds();
-      renderAllPosts();
-      renderInputValidity();
+    if (!_.isEmpty(rss.feeds)) {
+      renderFeedsList(rss.feeds);
+      renderPostsList(watchedState);
+      renderInputValidity(ui.input.isValid);
     }
 
     if (!state.ui.form.isRefreshed) {
@@ -185,7 +184,7 @@ const render = (state) => {
     updateRss(watchedState);
   };
 
-  const runApp = () => {
+  const watchApp = () => {
     if (!state.isAppWatched) {
       elements.form.addEventListener('submit', (event) => {
         event.preventDefault();
@@ -211,7 +210,7 @@ const render = (state) => {
     }
   };
 
-  runApp();
+  watchApp();
   renderView();
 };
 
