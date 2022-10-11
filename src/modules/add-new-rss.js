@@ -25,7 +25,7 @@ const addNewRSS = (watchedState, url) => {
 
       const newRss = parseRssFromHtml(rssHtml, url);
 
-      newRss.feeds = [...newRss.feeds.map((feed) => ({ ...feed, id: newFeedId }))];
+      newRss.feeds = newRss.feeds.map((feed) => _.set(feed, 'id', newFeedId));
       const newPostsUnsorted = newRss.posts.map((post, index) => ({
         ...post,
         feedId: newFeedId,
@@ -35,8 +35,8 @@ const addNewRSS = (watchedState, url) => {
       newRss.posts = _.sortBy(newPostsUnsorted, (post) => (post.pubDate));
 
       watchedState.rss = {
-        feeds: [...rss.feeds, ...newRss.feeds],
-        posts: [...rss.posts, ...newRss.posts],
+        feeds: _.concat(rss.feeds, newRss.feeds),
+        posts: _.concat(rss.posts, newRss.posts),
       };
 
       ui.input.isValid = true;

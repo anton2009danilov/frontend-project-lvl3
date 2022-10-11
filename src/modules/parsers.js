@@ -18,7 +18,7 @@ const parsePostsFromRssHtml = (rssHtml) => {
 
   const newPosts = Array.from(postElements).reduce(
     (postsArr, el) => _.concat(
-      ...postsArr,
+      postsArr,
       {
         title: el.querySelector('title').textContent,
         link: el.querySelector('link').textContent,
@@ -34,7 +34,6 @@ const parsePostsFromRssHtml = (rssHtml) => {
 };
 
 const parseUpdatedRssHtml = (rssHtml, feed, index) => {
-  console.log(rssHtml);
   const { id } = feed;
   const postElements = rssHtml.querySelectorAll('item');
 
@@ -47,7 +46,7 @@ const parseUpdatedRssHtml = (rssHtml, feed, index) => {
   }));
 
   const newPubDate = rssHtml.querySelector('pubDate').textContent;
-  const updatedFeed = { ...feed, pubDate: newPubDate };
+  const updatedFeed = _.set(feed, 'pubDate', newPubDate);
 
   return [updatedFeed, index, posts];
 };

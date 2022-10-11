@@ -66,7 +66,7 @@ const render = (state) => {
     }
   });
 
-  const { rss } = watchedState;
+  const { rss } = state;
 
   const createFeedHtml = () => `
     <div class="card border-0">
@@ -129,7 +129,7 @@ const render = (state) => {
       const modalLink = modal.querySelector('a');
 
       if (e.target.tagName === 'BUTTON') {
-        watchedState.rss.posts[postIndex] = { ...post, isRead: true };
+        watchedState.rss.posts[postIndex] = _.set(post, 'isRead', true);
 
         modalTitle.textContent = post.title;
         modalBody.textContent = post.description;
@@ -190,17 +190,15 @@ const render = (state) => {
           const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
 
           if (!_.isEmpty(diffPosts)) {
-            watchedState.rss.feeds[updatedFeedIndex] = { ...changedFeed };
-
             const lastPostId = _.isEmpty(rss.posts) ? 0 : _.last(rss.posts).id;
 
             const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
               .map((post, postIndex) => {
                 const newPostId = lastPostId + postIndex + 1;
-                return { ...post, id: newPostId };
+                return _.set(post, 'id', newPostId);
               });
 
-            const updatedFeeds = _.set(state.rss.feeds, updatedFeedIndex, { ...changedFeed });
+            const updatedFeeds = _.set(_.clone(state).rss.feeds, updatedFeedIndex, changedFeed);
             const updatedPosts = _.concat(state.rss.posts, newPosts);
 
             watchedState.rss = {
