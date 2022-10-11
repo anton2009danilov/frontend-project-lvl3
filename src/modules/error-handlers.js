@@ -10,7 +10,7 @@ const handleNetworkError = (watchedState, e) => {
   throw (e);
 };
 
-const hanldeInvalidRssError = (watchedState, e) => {
+const handleInvalidRssError = (watchedState, e) => {
   if (e.message !== 'Network Error') {
     changeUiState(watchedState, i18next.t('yup.errors.invalidRss'));
     throw (e);
@@ -44,7 +44,7 @@ const checkForAlreadyExistsError = (watchedState, url) => {
 
 export {
   handleNetworkError,
-  hanldeInvalidRssError,
+  handleInvalidRssError,
   handleInvalidUrlError,
   checkForEmptyRssUrlError,
   checkForAlreadyExistsError,

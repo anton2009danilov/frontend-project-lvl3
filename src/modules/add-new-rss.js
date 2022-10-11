@@ -4,7 +4,7 @@ import getRssHtml from './get-rss-html.js';
 import { parseRssFromHtml } from './parsers.js';
 import {
   handleNetworkError,
-  hanldeInvalidRssError,
+  handleInvalidRssError,
   checkForEmptyRssUrlError,
 } from './error-handlers.js';
 
@@ -42,7 +42,7 @@ const addNewRSS = (watchedState, url) => {
       ui.input.isValid = true;
       ui.message = i18next.t('yup.success');
     })
-    .catch((e) => hanldeInvalidRssError(watchedState, e));
+    .catch((e) => handleInvalidRssError(watchedState, e));
 };
 
 export default addNewRSS;
