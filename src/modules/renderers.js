@@ -117,20 +117,8 @@ const renderPostsList = (watchedState) => {
   });
 };
 
-const renderView = (watchedState) => {
-  const { ui, rss } = watchedState;
-
-  if (!_.isEmpty(rss.feeds)) {
-    renderFeedsList(rss.feeds);
-    renderPostsList(watchedState);
-    renderInputValidity(ui.input.isValid);
-  }
-
-  if (!ui.form.isRefreshed) {
-    watchedState.ui.form.isRefreshed = true;
-  }
-
-  elements.feedback.textContent = ui.message;
+export {
+  renderInputValidity,
+  renderFeedsList,
+  renderPostsList,
 };
-
-export default renderView;

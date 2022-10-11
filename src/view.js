@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import onChange from 'on-change';
 import { object, string } from 'yup';
 import i18next from 'i18next';
@@ -7,7 +8,11 @@ import {
 } from './modules/error-handlers.js';
 import addNewRSS from './modules/add-new-rss.js';
 import updateRss from './modules/update-rss.js';
-import renderView from './modules/renderers.js';
+import {
+  renderInputValidity,
+  renderFeedsList,
+  renderPostsList,
+} from './modules/renderers.js';
 
 import ru from './locales/ru.js';
 
@@ -35,13 +40,6 @@ const elements = {
   posts: document.querySelector('div.posts'),
 };
 
-const watchForUpdates = (watchedState) => {
-  const timeStep = 5000;
-  setTimeout(watchForUpdates, timeStep);
-
-  updateRss(watchedState);
-};
-
 const render = (state) => {
   const watchedState = onChange(state, (path, value) => {
     if (path === 'ui.form.isRefreshed' && value) {
@@ -59,6 +57,29 @@ const render = (state) => {
       render(state);
     }
   });
+
+  const { ui, rss } = state;
+
+  const renderView = () => {
+    if (!_.isEmpty(rss.feeds)) {
+      renderFeedsList(rss.feeds);
+      renderPostsList(watchedState);
+      renderInputValidity(ui.input.isValid);
+    }
+
+    if (!state.ui.form.isRefreshed) {
+      watchedState.ui.form.isRefreshed = true;
+    }
+
+    elements.feedback.textContent = state.ui.message;
+  };
+
+  const watchForUpdates = () => {
+    const timeStep = 5000;
+    setTimeout(watchForUpdates, timeStep);
+
+    updateRss(watchedState);
+  };
 
   const watchApp = () => {
     if (!state.isAppWatched) {
@@ -80,14 +101,14 @@ const render = (state) => {
           .catch((e) => handleInvalidUrlError(watchedState, e));
       });
 
-      watchForUpdates(watchedState);
+      watchForUpdates();
 
       watchedState.isAppWatched = true;
     }
   };
 
   watchApp();
-  renderView(watchedState);
+  renderView();
 };
 
 export default render;
