@@ -186,7 +186,7 @@ const render = (state) => {
   };
 
   const runApp = () => {
-    if (!state.isAppRunning) {
+    if (!state.isAppWatched) {
       elements.form.addEventListener('submit', (event) => {
         event.preventDefault();
         const formData = new FormData(event.target);
@@ -207,7 +207,7 @@ const render = (state) => {
 
       watchForUpdates();
 
-      watchedState.isAppRunning = true;
+      watchedState.isAppWatched = true;
     }
   };
 
