@@ -7,8 +7,8 @@ import {
   checkForAlreadyExistsError,
 } from './modules/error-handlers.js';
 import addNewRSS from './modules/add-new-rss.js';
-import { parseUpdatedRssHtml } from './modules/parsers.js';
-import getRssHtml from './modules/get-rss-html.js';
+import updateRss from './modules/update-rss.js';
+
 import ru from './locales/ru.js';
 
 const validateUrl = (url) => {
@@ -178,70 +178,40 @@ const render = (state) => {
     elements.feedback.textContent = state.ui.message;
   };
 
-  const updateRss = () => {
-    state.rss.feeds.forEach((feed, index) => {
-      const { url } = feed;
-
-      getRssHtml(url)
-        .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
-        .then(([changedFeed, updatedFeedIndex, posts]) => {
-          const { id } = changedFeed;
-          const currentPosts = _.filter(state.rss.posts, ({ feedId }) => feedId === id);
-          const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
-
-          if (!_.isEmpty(diffPosts)) {
-            const lastPostId = _.isEmpty(rss.posts) ? 0 : _.last(rss.posts).id;
-
-            const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
-              .map((post, postIndex) => {
-                const newPostId = lastPostId + postIndex + 1;
-                return _.set(post, 'id', newPostId);
-              });
-
-            const updatedFeeds = _.set(_.clone(state).rss.feeds, updatedFeedIndex, changedFeed);
-            const updatedPosts = _.concat(state.rss.posts, newPosts);
-
-            watchedState.rss = {
-              feeds: updatedFeeds,
-              posts: updatedPosts,
-            };
-          }
-        })
-        .catch((e) => { throw (e); });
-    });
-  };
-
   const watchForUpdates = () => {
     const timeStep = 5000;
     setTimeout(watchForUpdates, timeStep);
 
-    updateRss();
+    updateRss(watchedState);
   };
 
-  if (!state.isAppRunning) {
-    elements.form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const formData = new FormData(event.target);
-      watchedState.ui.form.isRefreshed = false;
+  const runApp = () => {
+    if (!state.isAppRunning) {
+      elements.form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        watchedState.ui.form.isRefreshed = false;
 
-      const url = formData.get('url');
+        const url = formData.get('url');
 
-      validateUrl({ url })
-        .then(() => {
-          if (checkForAlreadyExistsError(watchedState, url)) {
-            return false;
-          }
+        validateUrl({ url })
+          .then(() => {
+            if (checkForAlreadyExistsError(watchedState, url)) {
+              return false;
+            }
 
-          return addNewRSS(watchedState, url);
-        })
-        .catch((e) => handleInvalidUrlError(watchedState, e));
-    });
+            return addNewRSS(watchedState, url);
+          })
+          .catch((e) => handleInvalidUrlError(watchedState, e));
+      });
 
-    watchForUpdates();
+      watchForUpdates();
 
-    watchedState.isAppRunning = true;
-  }
+      watchedState.isAppRunning = true;
+    }
+  };
 
+  runApp();
   renderView();
 };
 
