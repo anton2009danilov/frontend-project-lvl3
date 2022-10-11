@@ -1,15 +1,7 @@
 import _ from 'lodash';
 import i18next from 'i18next';
 
-const elements = {
-  form: document.querySelector('form'),
-  input: document.querySelector('input'),
-  feedback: document.querySelector('.feedback'),
-  feeds: document.querySelector('div.feeds'),
-  posts: document.querySelector('div.posts'),
-};
-
-const renderInputValidity = (isValid) => {
+const renderInputValidity = (elements, isValid) => {
   if (isValid) {
     elements.input.classList.remove('is-invalid');
     elements.feedback.classList.remove('text-danger');
@@ -53,7 +45,7 @@ const createPostHtml = (post) => `
     </button>
   `;
 
-const renderFeedsList = (feeds) => {
+const renderFeedsList = (elements, feeds) => {
   const { feeds: feedsContainerElement } = elements;
 
   feedsContainerElement.innerHTML = createFeedHtml();
@@ -79,7 +71,7 @@ const renderSinglePost = (post) => {
   return postElement;
 };
 
-const renderPostsList = (watchedState) => {
+const renderPostsList = (elements, watchedState) => {
   const { posts: postsContainerElement } = elements;
 
   postsContainerElement.innerHTML = `
@@ -110,7 +102,7 @@ const renderPostsList = (watchedState) => {
 
         watchedState.ui.input.isValid = true;
         watchedState.ui.message = i18next.t('yup.rssView');
-        renderPostsList(watchedState);
+        renderPostsList(elements, watchedState);
       }
     });
     postList.prepend(view);

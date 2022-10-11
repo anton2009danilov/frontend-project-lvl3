@@ -62,9 +62,9 @@ const render = (state) => {
 
   const renderView = () => {
     if (!_.isEmpty(rss.feeds)) {
-      renderFeedsList(rss.feeds);
-      renderPostsList(watchedState);
-      renderInputValidity(ui.input.isValid);
+      renderFeedsList(elements, rss.feeds);
+      renderPostsList(elements, watchedState);
+      renderInputValidity(elements, ui.input.isValid);
     }
 
     if (!state.ui.form.isRefreshed) {
