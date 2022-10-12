@@ -1,36 +1,10 @@
 import _ from 'lodash';
 import onChange from 'on-change';
-import { object, string } from 'yup';
-import i18next from 'i18next';
-import {
-  handleInvalidUrlError,
-  checkForAlreadyExistsError,
-} from './modules/error-handlers.js';
-import addNewRSS from './modules/add-new-rss.js';
-import updateRss from './modules/update-rss.js';
 import {
   renderInputValidity,
   renderFeedsList,
   renderPostsList,
 } from './modules/renderers.js';
-
-import ru from './locales/ru.js';
-
-const validateUrl = (url) => {
-  const urlSchema = object({
-    url: string().url(),
-  });
-
-  return urlSchema.validate(url);
-};
-
-i18next.init({
-  lng: 'ru',
-  debug: true,
-  resources: {
-    ru,
-  },
-});
 
 const elements = {
   form: document.querySelector('form'),
@@ -74,41 +48,8 @@ const render = (state) => {
     elements.feedback.textContent = state.form.message;
   };
 
-  const watchForUpdates = () => {
-    const timeStep = 5000;
-    setTimeout(watchForUpdates, timeStep);
-
-    updateRss(watchedState);
-  };
-
-  const watchApp = () => {
-    if (!state.ui.isStateWatched) {
-      elements.form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        watchedState.form.isRefreshed = false;
-
-        const url = formData.get('url');
-
-        validateUrl({ url })
-          .then(() => {
-            if (checkForAlreadyExistsError(watchedState, url)) {
-              return false;
-            }
-
-            return addNewRSS(watchedState, url);
-          })
-          .catch((e) => handleInvalidUrlError(watchedState, e));
-      });
-
-      watchForUpdates();
-
-      watchedState.ui.isStateWatched = true;
-    }
-  };
-
-  watchApp();
   renderView();
+  return watchedState;
 };
 
 export default render;

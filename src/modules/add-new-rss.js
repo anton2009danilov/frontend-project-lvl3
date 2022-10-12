@@ -9,7 +9,7 @@ import {
 } from './error-handlers.js';
 
 const addNewRSS = (watchedState, url) => {
-  const { form, ui, rss } = watchedState;
+  const { form, rss } = watchedState;
 
   if (checkForEmptyRssUrlError(watchedState, url)) {
     return;
