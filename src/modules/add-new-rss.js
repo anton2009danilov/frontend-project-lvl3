@@ -9,7 +9,7 @@ import {
 } from './error-handlers.js';
 
 const addNewRSS = (watchedState, url) => {
-  const { ui, rss } = watchedState;
+  const { form, ui, rss } = watchedState;
 
   if (checkForEmptyRssUrlError(watchedState, url)) {
     return;
@@ -39,8 +39,8 @@ const addNewRSS = (watchedState, url) => {
         posts: _.concat(rss.posts, newRss.posts),
       };
 
-      ui.input.isValid = true;
-      ui.message = i18next.t('yup.success');
+      form.input.isValid = true;
+      form.message = i18next.t('yup.success');
     })
     .catch((e) => handleInvalidRssError(watchedState, e));
 };

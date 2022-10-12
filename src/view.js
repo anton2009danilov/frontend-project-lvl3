@@ -42,13 +42,13 @@ const elements = {
 
 const render = (state) => {
   const watchedState = onChange(state, (path, value) => {
-    if (path === 'ui.form.isRefreshed' && value) {
+    if (path === 'form.isRefreshed' && value) {
       elements.form.reset();
       elements.input.focus();
       return;
     }
 
-    if (path === 'ui.message') {
+    if (path === 'form.message') {
       render(state);
       return;
     }
@@ -58,20 +58,20 @@ const render = (state) => {
     }
   });
 
-  const { ui, rss } = state;
+  const { form, rss } = state;
 
   const renderView = () => {
     if (!_.isEmpty(rss.feeds)) {
       renderFeedsList(elements, rss.feeds);
       renderPostsList(elements, watchedState);
-      renderInputValidity(elements, ui.input.isValid);
+      renderInputValidity(elements, form.input.isValid);
     }
 
-    if (!state.ui.form.isRefreshed) {
-      watchedState.ui.form.isRefreshed = true;
+    if (!state.form.isRefreshed) {
+      watchedState.form.isRefreshed = true;
     }
 
-    elements.feedback.textContent = state.ui.message;
+    elements.feedback.textContent = state.form.message;
   };
 
   const watchForUpdates = () => {
@@ -82,11 +82,11 @@ const render = (state) => {
   };
 
   const watchApp = () => {
-    if (!state.isStateWatched) {
+    if (!state.ui.isStateWatched) {
       elements.form.addEventListener('submit', (event) => {
         event.preventDefault();
         const formData = new FormData(event.target);
-        watchedState.ui.form.isRefreshed = false;
+        watchedState.form.isRefreshed = false;
 
         const url = formData.get('url');
 
@@ -103,7 +103,7 @@ const render = (state) => {
 
       watchForUpdates();
 
-      watchedState.isStateWatched = true;
+      watchedState.ui.isStateWatched = true;
     }
   };
 

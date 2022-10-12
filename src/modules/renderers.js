@@ -100,8 +100,8 @@ const renderPostsList = (elements, watchedState) => {
         modalBody.textContent = post.description;
         modalLink.href = post.link;
 
-        watchedState.ui.input.isValid = true;
-        watchedState.ui.message = i18next.t('yup.rssView');
+        watchedState.form.input.isValid = true;
+        watchedState.form.message = i18next.t('yup.rssView');
         renderPostsList(elements, watchedState);
       }
     });

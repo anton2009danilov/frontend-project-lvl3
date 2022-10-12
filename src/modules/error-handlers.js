@@ -1,8 +1,8 @@
 import i18next from 'i18next';
 
 const changeUiState = (watchedState, message) => {
-  watchedState.ui.input.isValid = false;
-  watchedState.ui.message = message;
+  watchedState.form.input.isValid = false;
+  watchedState.form.message = message;
 };
 
 const handleNetworkError = (watchedState, e) => {

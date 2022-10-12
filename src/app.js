@@ -2,16 +2,15 @@ import render from './view.js';
 
 export default () => {
   const state = {
-    isStateWatched: false,
-    newRssUrl: null,
-    ui: {
-      form: {
-        isRefreshed: true,
-      },
+    form: {
+      isRefreshed: true,
+      message: null,
       input: {
         isValid: true,
       },
-      message: null,
+    },
+    ui: {
+      isStateWatched: false,
     },
     rss: {
       feeds: [],
