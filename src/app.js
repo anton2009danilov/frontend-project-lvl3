@@ -157,61 +157,57 @@ const updateRss = (watchedState) => {
   });
 };
 
+const state = {
+  form: {
+    isRefreshed: true,
+    message: null,
+    input: {
+      isValid: true,
+    },
+  },
+  ui: {
+    isStateWatched: false,
+  },
+  rss: {
+    feeds: [],
+    posts: [],
+  },
+};
+
+const view = render(state);
+
+const watchForUpdates = () => {
+  const timeStep = 5000;
+  setTimeout(watchForUpdates, timeStep);
+
+  updateRss(view);
+};
+
 const app = () => {
-  const state = {
-    form: {
-      isRefreshed: true,
-      message: null,
-      input: {
-        isValid: true,
-      },
-    },
-    ui: {
-      isStateWatched: false,
-    },
-    rss: {
-      feeds: [],
-      posts: [],
-    },
-  };
+  if (!state.ui.isStateWatched) {
+    const form = document.querySelector('form');
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      view.form.isRefreshed = false;
 
-  const view = render(state);
+      const url = formData.get('url');
 
-  const watchForUpdates = () => {
-    const timeStep = 5000;
-    setTimeout(watchForUpdates, timeStep);
+      validateUrl({ url })
+        .then(() => {
+          if (checkForAlreadyExistsError(view, url)) {
+            return false;
+          }
 
-    updateRss(view);
-  };
+          return addNewRss(view, url);
+        })
+        .catch((e) => handleInvalidUrlError(view, e));
+    });
 
-  const watchApp = () => {
-    if (!state.ui.isStateWatched) {
-      const form = document.querySelector('form');
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        view.form.isRefreshed = false;
+    watchForUpdates();
 
-        const url = formData.get('url');
-
-        validateUrl({ url })
-          .then(() => {
-            if (checkForAlreadyExistsError(view, url)) {
-              return false;
-            }
-
-            return addNewRss(view, url);
-          })
-          .catch((e) => handleInvalidUrlError(view, e));
-      });
-
-      watchForUpdates();
-
-      view.ui.isStateWatched = true;
-    }
-  };
-
-  watchApp(view);
+    view.ui.isStateWatched = true;
+  }
 };
 
 export default app;
