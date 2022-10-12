@@ -103,14 +103,19 @@ const renderPostsList = (watchedState) => {
       const modalLink = modal.querySelector('a');
 
       if (e.target.tagName === 'BUTTON') {
-        watchedState.rss.posts[postIndex] = _.set(post, 'isRead', true);
+        _.set(
+          watchedState,
+          `rss.posts.${postIndex}`,
+          _.set(post, 'isRead', true),
+        );
 
         modalTitle.textContent = post.title;
         modalBody.textContent = post.description;
         modalLink.href = post.link;
 
-        watchedState.form.input.isValid = true;
-        watchedState.form.message = i18next.t('yup.rssView');
+        _.set(watchedState, 'form.input.isValid', true);
+        _.set(watchedState, 'form.message', i18next.t('yup.rssView'));
+
         renderPostsList(watchedState);
       }
     });

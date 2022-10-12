@@ -15,8 +15,8 @@ i18next.init({
 });
 
 const changeUiState = (watchedState, message) => {
-  watchedState.form.input.isValid = false;
-  watchedState.form.message = message;
+  _.set(watchedState, 'form.input.isValid', false);
+  _.set(watchedState, 'form.message', message);
 };
 
 const handleNetworkError = (watchedState, e) => {
@@ -98,10 +98,14 @@ const addNewRss = (watchedState, url) => {
 
       newRss.posts = _.sortBy(newPostsUnsorted, (post) => (post.pubDate));
 
-      watchedState.rss = {
-        feeds: _.concat(rss.feeds, newRss.feeds),
-        posts: _.concat(rss.posts, newRss.posts),
-      };
+      _.set(
+        watchedState,
+        'rss',
+        {
+          feeds: _.concat(rss.feeds, newRss.feeds),
+          posts: _.concat(rss.posts, newRss.posts),
+        },
+      );
 
       form.input.isValid = true;
       form.message = i18next.t('yup.success');
@@ -139,10 +143,14 @@ const updateRss = (watchedState) => {
 
           const updatedPosts = _.concat(watchedState.rss.posts, newPosts);
 
-          watchedState.rss = {
-            feeds: updatedFeeds,
-            posts: updatedPosts,
-          };
+          _.set(
+            watchedState,
+            'rss',
+            {
+              feeds: updatedFeeds,
+              posts: updatedPosts,
+            },
+          );
         }
       })
       .catch((e) => { throw (e); });
