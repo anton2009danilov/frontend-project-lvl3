@@ -80,7 +80,7 @@ const renderSinglePost = (post) => {
   return postElement;
 };
 
-const renderPostsList = (watchedState) => {
+const renderPostsList = (state) => {
   const { posts: postsContainerElement } = elements;
 
   postsContainerElement.innerHTML = `
@@ -94,7 +94,7 @@ const renderPostsList = (watchedState) => {
 
   const postList = postsContainerElement.querySelector('ul');
 
-  watchedState.rss.posts.forEach((post, postIndex) => {
+  state.rss.posts.forEach((post, postIndex) => {
     const view = renderSinglePost(post);
     view.addEventListener('click', (e) => {
       const modal = document.getElementById('modal');
@@ -104,7 +104,7 @@ const renderPostsList = (watchedState) => {
 
       if (e.target.tagName === 'BUTTON') {
         _.set(
-          watchedState,
+          state,
           `rss.posts.${postIndex}`,
           _.set(post, 'isRead', true),
         );
@@ -113,14 +113,30 @@ const renderPostsList = (watchedState) => {
         modalBody.textContent = post.description;
         modalLink.href = post.link;
 
-        _.set(watchedState, 'form.input.isValid', true);
-        _.set(watchedState, 'form.message', i18next.t('yup.rssView'));
+        _.set(state, 'form.input.isValid', true);
+        _.set(state, 'form.message', i18next.t('yup.rssView'));
 
-        renderPostsList(watchedState);
+        renderPostsList(state);
       }
     });
     postList.prepend(view);
   });
+};
+
+const renderView = (view) => {
+  const { form, rss } = view;
+
+  if (!_.isEmpty(rss.feeds)) {
+    renderFeedsList(rss.feeds);
+    renderPostsList(view);
+    renderInputValidity(form.input.isValid);
+  }
+
+  if (!view.form.isRefreshed) {
+    _.set(view, 'form.isRefreshed', true);
+  }
+
+  elements.feedback.textContent = view.form.message;
 };
 
 const render = (state) => {
@@ -141,23 +157,7 @@ const render = (state) => {
     }
   });
 
-  const { form, rss } = state;
-
-  const renderView = () => {
-    if (!_.isEmpty(rss.feeds)) {
-      renderFeedsList(rss.feeds);
-      renderPostsList(watchedState);
-      renderInputValidity(form.input.isValid);
-    }
-
-    if (!state.form.isRefreshed) {
-      watchedState.form.isRefreshed = true;
-    }
-
-    elements.feedback.textContent = state.form.message;
-  };
-
-  renderView();
+  renderView(watchedState);
   return watchedState;
 };
 
