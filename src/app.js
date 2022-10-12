@@ -2,7 +2,7 @@ import render from './view.js';
 
 export default () => {
   const state = {
-    isAppWatched: false,
+    isStateWatched: false,
     newRssUrl: null,
     ui: {
       form: {
