@@ -104,12 +104,12 @@ const app = () => {
       .then((rssHtml) => {
         const { feeds, posts } = rss;
 
-        const newFeedId = _.isEmpty(feeds) ? 1 : _.last(feeds).id + 1;
-        const newPostId = _.isEmpty(posts) ? 1 : _.last(posts).id + 1;
+        const newFeedId = !feeds.length ? 1 : feeds.at(-1).id + 1;
+        const newPostId = !posts.length ? 1 : posts.at(-1).id + 1;
 
         const newRss = parseRssFromHtml(rssHtml, url);
+        newRss.feeds = newRss.feeds.map((feed) => ({ ...feed, id: newFeedId }));
 
-        newRss.feeds = newRss.feeds.map((feed) => _.set(feed, 'id', newFeedId));
         const newPostsUnsorted = newRss.posts.map((post, index) => ({
           ...post,
           feedId: newFeedId,
@@ -118,14 +118,10 @@ const app = () => {
 
         newRss.posts = _.sortBy(newPostsUnsorted, (post) => (post.pubDate));
 
-        _.set(
-          view,
-          'rss',
-          {
-            feeds: _.concat(rss.feeds, newRss.feeds),
-            posts: _.concat(rss.posts, newRss.posts),
-          },
-        );
+        view.rss = {
+          feeds: [...rss.feeds, ...newRss.feeds],
+          posts: [...rss.posts, ...newRss.posts],
+        };
 
         form.input.isValid = true;
         form.message = i18next.t('yup.success');
