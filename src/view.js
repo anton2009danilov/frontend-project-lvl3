@@ -155,6 +155,10 @@ const render = (state) => {
     if (path === 'rss') {
       render(state);
     }
+
+    if (path === 'rss.posts') {
+      render(state);
+    }
   });
 
   renderView(watchedState);

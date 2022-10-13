@@ -141,7 +141,8 @@ const app = () => {
         .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
         .then(([changedFeed, updatedFeedIndex, posts]) => {
           const { id } = changedFeed;
-          const currentPosts = _.filter(view.rss.posts, ({ feedId }) => feedId === id);
+
+          const currentPosts = view.rss.posts.filter(({ feedId }) => feedId === id);
           const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
 
           if (!_.isEmpty(diffPosts)) {
@@ -152,25 +153,12 @@ const app = () => {
             const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
               .map((post, postIndex) => {
                 const newPostId = lastPostId + postIndex + 1;
-                return _.set(post, 'id', newPostId);
+                return { ...post, id: newPostId };
               });
 
-            const updatedFeeds = _.set(
-              _.clone(view).rss.feeds,
-              updatedFeedIndex,
-              changedFeed,
-            );
+            view.rss.posts = [...view.rss.posts, ...newPosts];
 
-            const updatedPosts = _.concat(view.rss.posts, newPosts);
-
-            _.set(
-              view,
-              'rss',
-              {
-                feeds: updatedFeeds,
-                posts: updatedPosts,
-              },
-            );
+            _.set(view.rss.feeds, updatedFeedIndex, changedFeed);
           }
         })
         .catch((e) => { throw (e); });
