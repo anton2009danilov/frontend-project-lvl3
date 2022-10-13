@@ -129,43 +129,37 @@ const app = () => {
       .catch((e) => handleInvalidRssError(e));
   };
 
-  const updateRss = () => {
-    view.rss.feeds.forEach((feed, index) => {
-      const { url } = feed;
+  const updateRss = (feed, index) => getRssHtml(feed.url)
+    .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
+    .then(([changedFeed, updatedFeedIndex, posts]) => {
+      const { id } = changedFeed;
 
-      getRssHtml(url)
-        .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
-        .then(([changedFeed, updatedFeedIndex, posts]) => {
-          const { id } = changedFeed;
+      const currentPosts = view.rss.posts.filter(({ feedId }) => feedId === id);
+      const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
 
-          const currentPosts = view.rss.posts.filter(({ feedId }) => feedId === id);
-          const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
+      if (!_.isEmpty(diffPosts)) {
+        const lastPostId = _.isEmpty(view.rss.posts)
+          ? 0
+          : _.last(view.rss.posts).id;
 
-          if (!_.isEmpty(diffPosts)) {
-            const lastPostId = _.isEmpty(view.rss.posts)
-              ? 0
-              : _.last(view.rss.posts).id;
+        const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
+          .map((post, postIndex) => {
+            const newPostId = lastPostId + postIndex + 1;
+            return { ...post, id: newPostId };
+          });
 
-            const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
-              .map((post, postIndex) => {
-                const newPostId = lastPostId + postIndex + 1;
-                return { ...post, id: newPostId };
-              });
+        view.rss.posts = [...view.rss.posts, ...newPosts];
 
-            view.rss.posts = [...view.rss.posts, ...newPosts];
-
-            _.set(view.rss.feeds, updatedFeedIndex, changedFeed);
-          }
-        })
-        .catch((e) => { throw (e); });
-    });
-  };
+        _.set(view.rss.feeds, updatedFeedIndex, changedFeed);
+      }
+    })
+    .catch((e) => { throw (e); });
 
   const watchForUpdates = () => {
     const timeStep = 5000;
-    setTimeout(watchForUpdates, timeStep);
 
-    updateRss();
+    Promise.allSettled(view.rss.feeds.map((feed, index) => updateRss(feed, index)))
+      .then(() => setTimeout(watchForUpdates, timeStep));
   };
 
   const form = document.querySelector('form');
