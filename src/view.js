@@ -123,20 +123,20 @@ const renderPostsList = (state) => {
   });
 };
 
-const renderView = (view) => {
-  const { form, rss } = view;
+const renderView = (watchedState) => {
+  const { form, rss } = watchedState;
 
   if (!_.isEmpty(rss.feeds)) {
     renderFeedsList(rss.feeds);
-    renderPostsList(view);
+    renderPostsList(watchedState);
     renderInputValidity(form.input.isValid);
   }
 
-  if (!view.form.isRefreshed) {
-    _.set(view, 'form.isRefreshed', true);
+  if (!watchedState.form.isRefreshed) {
+    _.set(watchedState, 'form.isRefreshed', true);
   }
 
-  elements.feedback.textContent = view.form.message;
+  elements.feedback.textContent = watchedState.form.message;
 };
 
 const render = (state) => {
@@ -148,16 +148,17 @@ const render = (state) => {
     }
 
     if (path === 'form.message') {
-      render(state);
+      renderInputValidity(state.form.input.isValid);
+      elements.feedback.textContent = state.form.message;
       return;
     }
 
     if (path === 'rss') {
-      render(state);
+      renderView(watchedState);
     }
 
     if (path === 'rss.posts') {
-      render(state);
+      renderPostsList(watchedState);
     }
   });
 
