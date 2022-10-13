@@ -6,6 +6,25 @@ import ru from './locales/ru.js';
 import render from './view.js';
 import { parseRssFromHtml, parseUpdatedRssHtml } from './parsers.js';
 
+const state = {
+  form: {
+    isRefreshed: true,
+    message: null,
+    input: {
+      isValid: true,
+    },
+  },
+  ui: {
+    isStateWatched: false,
+  },
+  rss: {
+    feeds: [],
+    posts: [],
+  },
+};
+
+const view = render(state);
+
 i18next.init({
   lng: 'ru',
   debug: true,
@@ -14,42 +33,42 @@ i18next.init({
   },
 });
 
-const changeUiState = (watchedState, message) => {
-  _.set(watchedState, 'form.input.isValid', false);
-  _.set(watchedState, 'form.message', message);
+const changeUiState = (message) => {
+  view.form.input.isValid = false;
+  view.form.message = message;
 };
 
-const handleNetworkError = (watchedState, e) => {
-  changeUiState(watchedState, i18next.t('yup.errors.networkError'));
+const handleNetworkError = (e) => {
+  changeUiState(i18next.t('yup.errors.networkError'));
   throw (e);
 };
 
-const handleInvalidRssError = (watchedState, e) => {
+const handleInvalidRssError = (e) => {
   if (e.message !== 'Network Error') {
-    changeUiState(watchedState, i18next.t('yup.errors.invalidRss'));
+    changeUiState(i18next.t('yup.errors.invalidRss'));
     throw (e);
   }
 };
 
-const handleInvalidUrlError = (watchedState) => {
-  changeUiState(watchedState, i18next.t('yup.errors.invalidUrl'));
+const handleInvalidUrlError = () => {
+  changeUiState(i18next.t('yup.errors.invalidUrl'));
 };
 
-const checkForEmptyRssUrlError = (watchedState, url) => {
+const checkForEmptyRssUrlError = (url) => {
   if (!url) {
-    changeUiState(watchedState, i18next.t('yup.errors.emptyRssUrl'));
+    changeUiState(i18next.t('yup.errors.emptyRssUrl'));
     return true;
   }
 
   return false;
 };
 
-const checkForAlreadyExistsError = (watchedState, url) => {
-  const { feeds } = watchedState.rss;
+const checkForAlreadyExistsError = (url) => {
+  const { feeds } = view.rss;
   const isRepeated = feeds.some((feed) => feed.url === url);
 
   if (isRepeated) {
-    changeUiState(watchedState, i18next.t('yup.errors.alreadyExists'));
+    changeUiState(i18next.t('yup.errors.alreadyExists'));
     return true;
   }
 
@@ -72,15 +91,15 @@ const getRssHtml = (url) => {
     .then((data) => parser.parseFromString(data.contents, 'text/xml'));
 };
 
-const addNewRss = (watchedState, url) => {
-  const { form, rss } = watchedState;
+const addNewRss = (url) => {
+  const { form, rss } = view;
 
-  if (checkForEmptyRssUrlError(watchedState, url)) {
+  if (checkForEmptyRssUrlError(url)) {
     return;
   }
 
   getRssHtml(url)
-    .catch((e) => handleNetworkError(watchedState, e))
+    .catch((e) => handleNetworkError(e))
     .then((rssHtml) => {
       const { feeds, posts } = rss;
 
@@ -99,7 +118,7 @@ const addNewRss = (watchedState, url) => {
       newRss.posts = _.sortBy(newPostsUnsorted, (post) => (post.pubDate));
 
       _.set(
-        watchedState,
+        view,
         'rss',
         {
           feeds: _.concat(rss.feeds, newRss.feeds),
@@ -110,24 +129,24 @@ const addNewRss = (watchedState, url) => {
       form.input.isValid = true;
       form.message = i18next.t('yup.success');
     })
-    .catch((e) => handleInvalidRssError(watchedState, e));
+    .catch((e) => handleInvalidRssError(e));
 };
 
-const updateRss = (watchedState) => {
-  watchedState.rss.feeds.forEach((feed, index) => {
+const updateRss = () => {
+  view.rss.feeds.forEach((feed, index) => {
     const { url } = feed;
 
     getRssHtml(url)
       .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
       .then(([changedFeed, updatedFeedIndex, posts]) => {
         const { id } = changedFeed;
-        const currentPosts = _.filter(watchedState.rss.posts, ({ feedId }) => feedId === id);
+        const currentPosts = _.filter(view.rss.posts, ({ feedId }) => feedId === id);
         const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
 
         if (!_.isEmpty(diffPosts)) {
-          const lastPostId = _.isEmpty(watchedState.rss.posts)
+          const lastPostId = _.isEmpty(view.rss.posts)
             ? 0
-            : _.last(watchedState.rss.posts).id;
+            : _.last(view.rss.posts).id;
 
           const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
             .map((post, postIndex) => {
@@ -136,15 +155,15 @@ const updateRss = (watchedState) => {
             });
 
           const updatedFeeds = _.set(
-            _.clone(watchedState).rss.feeds,
+            _.clone(view).rss.feeds,
             updatedFeedIndex,
             changedFeed,
           );
 
-          const updatedPosts = _.concat(watchedState.rss.posts, newPosts);
+          const updatedPosts = _.concat(view.rss.posts, newPosts);
 
           _.set(
-            watchedState,
+            view,
             'rss',
             {
               feeds: updatedFeeds,
@@ -157,30 +176,11 @@ const updateRss = (watchedState) => {
   });
 };
 
-const state = {
-  form: {
-    isRefreshed: true,
-    message: null,
-    input: {
-      isValid: true,
-    },
-  },
-  ui: {
-    isStateWatched: false,
-  },
-  rss: {
-    feeds: [],
-    posts: [],
-  },
-};
-
-const view = render(state);
-
 const watchForUpdates = () => {
   const timeStep = 5000;
   setTimeout(watchForUpdates, timeStep);
 
-  updateRss(view);
+  updateRss();
 };
 
 const app = () => {
@@ -194,13 +194,13 @@ const app = () => {
 
     validateUrl({ url })
       .then(() => {
-        if (checkForAlreadyExistsError(view, url)) {
+        if (checkForAlreadyExistsError(url)) {
           return false;
         }
 
-        return addNewRss(view, url);
+        return addNewRss(url);
       })
-      .catch((e) => handleInvalidUrlError(view, e));
+      .catch((e) => handleInvalidUrlError(e));
   });
 
   watchForUpdates();
