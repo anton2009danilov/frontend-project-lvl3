@@ -184,30 +184,28 @@ const watchForUpdates = () => {
 };
 
 const app = () => {
-  if (!state.ui.isStateWatched) {
-    const form = document.querySelector('form');
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const formData = new FormData(event.target);
-      view.form.isRefreshed = false;
+  const form = document.querySelector('form');
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    view.form.isRefreshed = false;
 
-      const url = formData.get('url');
+    const url = formData.get('url');
 
-      validateUrl({ url })
-        .then(() => {
-          if (checkForAlreadyExistsError(view, url)) {
-            return false;
-          }
+    validateUrl({ url })
+      .then(() => {
+        if (checkForAlreadyExistsError(view, url)) {
+          return false;
+        }
 
-          return addNewRss(view, url);
-        })
-        .catch((e) => handleInvalidUrlError(view, e));
-    });
+        return addNewRss(view, url);
+      })
+      .catch((e) => handleInvalidUrlError(view, e));
+  });
 
-    watchForUpdates();
+  watchForUpdates();
 
-    view.ui.isStateWatched = true;
-  }
+  view.ui.isStateWatched = true;
 };
 
 export default app;
