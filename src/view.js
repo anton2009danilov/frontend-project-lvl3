@@ -132,27 +132,34 @@ const renderPostsList = (watchedState) => {
     const isPostRead = watchedState.ui.readPostsIds.includes(post.id);
     const view = renderSinglePost(post, isPostRead);
 
-    view.addEventListener('click', (e) => {
+    postList.prepend(view);
+  });
+};
+
+const addEventListenerToPosts = (watchedState) => {
+  const postsElements = elements.posts.getElementsByTagName('button');
+
+  Array.from(postsElements).forEach((postElement) => {
+    const postId = postElement.dataset.post_id;
+    const post = watchedState.rss.posts.filter((item) => item.id === parseInt(postId, 10))[0];
+
+    postElement.addEventListener('click', () => {
       const modal = document.getElementById('modal');
       const modalTitle = modal.querySelector('.modal-title');
       const modalBody = modal.querySelector('.modal-body');
       const modalLink = modal.querySelector('a');
 
-      if (e.target.tagName === 'BUTTON') {
-        if (!watchedState.ui.readPostsIds.includes(post.id)) {
-          _.set(watchedState, 'ui.readPostsIds', [...watchedState.ui.readPostsIds, post.id]);
-        }
-
-        modalTitle.textContent = post.title;
-        modalBody.textContent = post.description;
-        modalLink.href = post.link;
-
-        _.set(watchedState, 'form.input.isValid', true);
-        _.set(watchedState, 'form.message', i18next.t('yup.rssView'));
+      if (!watchedState.ui.readPostsIds.includes(post.id)) {
+        _.set(watchedState, 'ui.readPostsIds', [...watchedState.ui.readPostsIds, post.id]);
       }
-    });
 
-    postList.prepend(view);
+      modalTitle.textContent = post.title;
+      modalBody.textContent = post.description;
+      modalLink.href = post.link;
+
+      _.set(watchedState, 'form.input.isValid', true);
+      _.set(watchedState, 'form.message', i18next.t('yup.rssView'));
+    });
   });
 };
 
@@ -177,11 +184,13 @@ const render = (state) => {
         break;
       case 'rss':
         renderView(watchedState);
+        addEventListenerToPosts(watchedState);
         elements.form.reset();
         elements.input.focus();
         break;
       case 'rss.posts':
         renderPostsList(watchedState);
+        addEventListenerToPosts(watchedState);
         break;
       case 'ui.readPostsIds':
         renderWatchedPostStatus(state.rss.posts.filter((post) => post.id === value.at(-1))[0]);
