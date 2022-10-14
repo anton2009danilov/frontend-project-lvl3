@@ -9,7 +9,6 @@ import { parseRssFromHtml, parseUpdatedRssHtml } from './parsers.js';
 const app = () => {
   const state = {
     form: {
-      isRefreshed: true,
       message: null,
       input: {
         isValid: true,
@@ -166,7 +165,6 @@ const app = () => {
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
-    view.form.isRefreshed = false;
 
     const url = formData.get('url');
 

@@ -157,21 +157,11 @@ const renderView = (watchedState) => {
     renderInputValidity(form.input.isValid);
   }
 
-  if (!watchedState.form.isRefreshed) {
-    _.set(watchedState, 'form.isRefreshed', true);
-  }
-
   elements.feedback.textContent = watchedState.form.message;
 };
 
 const render = (state) => {
-  const watchedState = onChange(state, (path, value) => {
-    if (path === 'form.isRefreshed' && value) {
-      elements.form.reset();
-      elements.input.focus();
-      return;
-    }
-
+  const watchedState = onChange(state, (path) => {
     if (path === 'form.message') {
       renderInputValidity(state.form.input.isValid);
       elements.feedback.textContent = state.form.message;
@@ -180,6 +170,8 @@ const render = (state) => {
 
     if (path === 'rss') {
       renderView(watchedState);
+      elements.form.reset();
+      elements.input.focus();
     }
 
     if (path === 'rss.posts') {
