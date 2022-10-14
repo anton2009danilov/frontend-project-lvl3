@@ -162,20 +162,20 @@ const renderView = (watchedState) => {
 
 const render = (state) => {
   const watchedState = onChange(state, (path) => {
-    if (path === 'form.message') {
-      renderInputValidity(state.form.input.isValid);
-      elements.feedback.textContent = state.form.message;
-      return;
-    }
-
-    if (path === 'rss') {
-      renderView(watchedState);
-      elements.form.reset();
-      elements.input.focus();
-    }
-
-    if (path === 'rss.posts') {
-      renderPostsList(watchedState);
+    switch (path) {
+      case 'form.message':
+        renderInputValidity(state.form.input.isValid);
+        elements.feedback.textContent = state.form.message;
+        break;
+      case 'rss':
+        renderView(watchedState);
+        elements.form.reset();
+        elements.input.focus();
+        break;
+      case 'rss.posts':
+        renderPostsList(watchedState);
+        break;
+      default:
     }
   });
 
