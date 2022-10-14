@@ -16,6 +16,7 @@ const app = () => {
     },
     ui: {
       isStateWatched: false,
+      readPostsIds: [],
     },
     rss: {
       feeds: [],
@@ -103,8 +104,8 @@ const app = () => {
       .then((rssHtml) => {
         const { feeds, posts } = rss;
 
-        const newFeedId = !feeds.length ? 1 : feeds.at(-1).id + 1;
-        const newPostId = !posts.length ? 1 : posts.at(-1).id + 1;
+        const newFeedId = !feeds.length ? 1 : _.last(_.sortBy(feeds, (el) => el.id)).id + 1;
+        const newPostId = !posts.length ? 1 : _.last(_.sortBy(posts, (el) => el.id)).id + 1;
 
         const newRss = parseRssFromHtml(rssHtml, url);
         newRss.feeds = newRss.feeds.map((feed) => ({ ...feed, id: newFeedId }));
@@ -134,7 +135,7 @@ const app = () => {
       const { id } = changedFeed;
 
       const currentPosts = view.rss.posts.filter(({ feedId }) => feedId === id);
-      const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id', 'isRead'])), _.isEqual);
+      const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id'])), _.isEqual);
 
       if (!_.isEmpty(diffPosts)) {
         const lastPostId = _.isEmpty(view.rss.posts)

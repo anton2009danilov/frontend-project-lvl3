@@ -85,18 +85,22 @@ const renderFeedsList = (feeds) => {
   });
 };
 
-const renderSinglePost = (post) => {
+const renderSinglePost = (post, isRead) => {
   const postElement = document.createElement('li');
   postElement.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 
   const linkElement = document.createElement('a');
   linkElement.setAttribute('href', `${post.link}`);
-  linkElement.setAttribute('style', `color: ${!post.isRead && 'blue'};`);
   linkElement.setAttribute('target', '_blank');
   linkElement.setAttribute('rel', 'noopener noreferrer');
   linkElement.dataset.post_id = post.id;
-  linkElement.classList.add(`${post.isRead ? 'fw-normal' : 'fw-bold'}`);
   linkElement.textContent = post.title;
+
+  if (isRead) {
+    linkElement.classList.add('fw-normal', 'link-secondary');
+  } else {
+    linkElement.classList.add('fw-bold');
+  }
 
   const buttonElement = document.createElement('button');
   buttonElement.classList.add('btn', 'btn-outline-primary', 'btn-sm');
@@ -111,15 +115,22 @@ const renderSinglePost = (post) => {
   return postElement;
 };
 
-const renderPostsList = (state) => {
+const renderWatchedPostStatus = (post) => {
+  const linkElement = document.querySelector(`[data-post_id="${post.id}"]`);
+  linkElement.classList.remove('fw-bold');
+  linkElement.classList.add('fw-normal', 'link-secondary');
+};
+
+const renderPostsList = (watchedState) => {
   const { posts: postsContainerElement } = elements;
 
   postsContainerElement.innerHTML = createPostsContainerHtml();
 
   const postList = postsContainerElement.querySelector('ul');
 
-  state.rss.posts.forEach((post, postIndex) => {
-    const view = renderSinglePost(post);
+  watchedState.rss.posts.forEach((post) => {
+    const isPostRead = watchedState.ui.readPostsIds.includes(post.id);
+    const view = renderSinglePost(post, isPostRead);
 
     view.addEventListener('click', (e) => {
       const modal = document.getElementById('modal');
@@ -128,22 +139,19 @@ const renderPostsList = (state) => {
       const modalLink = modal.querySelector('a');
 
       if (e.target.tagName === 'BUTTON') {
-        _.set(
-          state,
-          `rss.posts.${postIndex}`,
-          _.set(post, 'isRead', true),
-        );
+        if (!watchedState.ui.readPostsIds.includes(post.id)) {
+          _.set(watchedState, 'ui.readPostsIds', [...watchedState.ui.readPostsIds, post.id]);
+        }
 
         modalTitle.textContent = post.title;
         modalBody.textContent = post.description;
         modalLink.href = post.link;
 
-        _.set(state, 'form.input.isValid', true);
-        _.set(state, 'form.message', i18next.t('yup.rssView'));
-
-        renderPostsList(state);
+        _.set(watchedState, 'form.input.isValid', true);
+        _.set(watchedState, 'form.message', i18next.t('yup.rssView'));
       }
     });
+
     postList.prepend(view);
   });
 };
@@ -161,7 +169,7 @@ const renderView = (watchedState) => {
 };
 
 const render = (state) => {
-  const watchedState = onChange(state, (path) => {
+  const watchedState = onChange(state, (path, value) => {
     switch (path) {
       case 'form.message':
         renderInputValidity(state.form.input.isValid);
@@ -174,6 +182,9 @@ const render = (state) => {
         break;
       case 'rss.posts':
         renderPostsList(watchedState);
+        break;
+      case 'ui.readPostsIds':
+        renderWatchedPostStatus(state.rss.posts.filter((post) => post.id === value.at(-1))[0]);
         break;
       default:
     }

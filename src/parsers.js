@@ -24,7 +24,6 @@ const parsePostsFromRssHtml = (rssHtml) => {
         link: el.querySelector('link').textContent,
         description: el.querySelector('description').textContent,
         pubDate: el.querySelector('pubDate').textContent,
-        isRead: false,
       },
     ),
     [],
