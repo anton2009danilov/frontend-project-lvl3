@@ -140,7 +140,7 @@ const app = () => {
       if (!_.isEmpty(diffPosts)) {
         const lastPostId = _.isEmpty(view.rss.posts)
           ? 0
-          : _.last(view.rss.posts).id;
+          : _.last(_.sortBy(view.rss.posts, (el) => el.id)).id;
 
         const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
           .map((post, postIndex) => {

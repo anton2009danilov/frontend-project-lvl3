@@ -121,15 +121,15 @@ const renderWatchedPostStatus = (post) => {
   linkElement.classList.add('fw-normal', 'link-secondary');
 };
 
-const renderPostsList = (watchedState) => {
+const renderPostsList = (state) => {
   const { posts: postsContainerElement } = elements;
 
   postsContainerElement.innerHTML = createPostsContainerHtml();
 
   const postList = postsContainerElement.querySelector('ul');
 
-  watchedState.rss.posts.forEach((post) => {
-    const isPostRead = watchedState.ui.readPostsIds.includes(post.id);
+  state.rss.posts.forEach((post) => {
+    const isPostRead = state.ui.readPostsIds.includes(post.id);
     const view = renderSinglePost(post, isPostRead);
 
     postList.prepend(view);
@@ -163,16 +163,16 @@ const addEventListenerToPosts = (watchedState) => {
   });
 };
 
-const renderView = (watchedState) => {
-  const { form, rss } = watchedState;
+const renderView = (state) => {
+  const { form, rss } = state;
 
   if (!_.isEmpty(rss.feeds)) {
     renderFeedsList(rss.feeds);
-    renderPostsList(watchedState);
+    renderPostsList(state);
     renderInputValidity(form.input.isValid);
   }
 
-  elements.feedback.textContent = watchedState.form.message;
+  elements.feedback.textContent = state.form.message;
 };
 
 const render = (state) => {
@@ -183,23 +183,23 @@ const render = (state) => {
         elements.feedback.textContent = state.form.message;
         break;
       case 'rss':
-        renderView(watchedState);
+        renderView(state);
         addEventListenerToPosts(watchedState);
         elements.form.reset();
         elements.input.focus();
         break;
       case 'rss.posts':
-        renderPostsList(watchedState);
+        renderPostsList(state);
         addEventListenerToPosts(watchedState);
         break;
       case 'ui.readPostsIds':
-        renderWatchedPostStatus(state.rss.posts.filter((post) => post.id === value.at(-1))[0]);
+        renderWatchedPostStatus(state.rss.posts.filter((post) => post.id === value.at(-1)).at(0));
         break;
       default:
     }
   });
 
-  renderView(watchedState);
+  renderView(state);
   return watchedState;
 };
 
