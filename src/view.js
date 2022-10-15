@@ -10,37 +10,21 @@ const elements = {
   posts: document.querySelector('div.posts'),
 };
 
-const createFeedsContainerHtml = () => {
+const createContainerHtmlElement = (type) => {
+  const titleTag = type === 'feeds' ? 'h2' : 'h4';
+  const titleText = type === 'feeds' ? 'Фиды' : 'Посты';
+
   const card = document.createElement('div');
   const cardBody = document.createElement('div');
-  const cardTitle = document.createElement('h2');
+  const cardTitle = document.createElement(titleTag);
   const feedsList = document.createElement('ul');
 
   card.classList.add('card', 'border-0');
   cardBody.classList.add('card-body');
-  cardTitle.classList.add('card-title', 'h4');
+  cardTitle.classList.add('card-title', titleTag);
   feedsList.classList.add('list-group', 'border-0', 'rounded-0');
 
-  cardTitle.textContent = 'Фиды';
-
-  cardBody.append(cardTitle);
-  card.append(cardBody, feedsList);
-
-  return card.outerHTML;
-};
-
-const createPostsContainerHtml = () => {
-  const card = document.createElement('div');
-  const cardBody = document.createElement('div');
-  const cardTitle = document.createElement('h2');
-  const feedsList = document.createElement('ul');
-
-  card.classList.add('card', 'border-0');
-  cardBody.classList.add('card-body');
-  cardTitle.classList.add('card-title', 'h4');
-  feedsList.classList.add('list-group', 'border-0', 'rounded-0');
-
-  cardTitle.textContent = 'Посты';
+  cardTitle.textContent = titleText;
 
   cardBody.append(cardTitle);
   card.append(cardBody, feedsList);
@@ -64,7 +48,7 @@ const renderInputValidity = (isValid) => {
 const renderFeedsList = (feeds) => {
   const { feeds: feedsContainerElement } = elements;
 
-  feedsContainerElement.innerHTML = createFeedsContainerHtml();
+  feedsContainerElement.innerHTML = createContainerHtmlElement('feeds');
 
   const feedsList = feedsContainerElement.querySelector('ul');
 
@@ -124,7 +108,7 @@ const renderWatchedPostStatus = (post) => {
 const renderPostsList = (state) => {
   const { posts: postsContainerElement } = elements;
 
-  postsContainerElement.innerHTML = createPostsContainerHtml();
+  postsContainerElement.innerHTML = createContainerHtmlElement('posts');
 
   const postList = postsContainerElement.querySelector('ul');
 
