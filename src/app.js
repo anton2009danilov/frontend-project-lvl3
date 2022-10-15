@@ -73,6 +73,10 @@ const getRssHtml = (url) => {
     .then((data) => parser.parseFromString(data.contents, 'text/xml'));
 };
 
+const generateNewId = (items) => (!items.length
+  ? 1
+  : _.last(_.sortBy(items, (el) => el.id)).id + 1);
+
 const app = () => {
   const state = {
     form: {
@@ -105,8 +109,8 @@ const app = () => {
       .then((rssHtml) => {
         const { feeds, posts } = rss;
 
-        const newFeedId = !feeds.length ? 1 : _.last(_.sortBy(feeds, (el) => el.id)).id + 1;
-        const newPostId = !posts.length ? 1 : _.last(_.sortBy(posts, (el) => el.id)).id + 1;
+        const newFeedId = generateNewId(feeds);
+        const newPostId = generateNewId(posts);
 
         const newRss = parseRssFromHtml(rssHtml, url);
         newRss.feeds = newRss.feeds.map((feed) => ({ ...feed, id: newFeedId }));
