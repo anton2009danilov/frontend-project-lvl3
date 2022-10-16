@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, { isEqual } from 'lodash';
 import axios from 'axios';
 import i18next from 'i18next';
 import { object, string } from 'yup';
@@ -75,9 +75,20 @@ const getRssHtml = (url) => {
     .then((data) => parser.parseFromString(data.contents, 'text/xml'));
 };
 
-const generateNewId = (items) => (!items.length
-  ? 1
-  : _.last(_.sortBy(items, (el) => el.id)).id + 1);
+const generateNewId = (items) => {
+  if (!items.length) {
+    return 1;
+  }
+
+  const sortedItems = items.reduce((sorted, item, index) => [
+    ...sorted,
+    items.filter((el) => el.id === index + 1).at(0),
+  ], []);
+
+  const lastItemId = sortedItems.at(-1).id;
+
+  return lastItemId + 1;
+};
 
 const app = () => {
   const state = {
