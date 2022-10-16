@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 const parseFeedFromRssHtml = (rssHtml, url) => {
   const title = rssHtml.querySelector('title').textContent;
   const description = rssHtml.querySelector('description').textContent;
@@ -15,15 +13,15 @@ const parsePostsFromRssHtml = (rssHtml) => {
   const postElements = rssHtml.querySelectorAll('item');
 
   const newPosts = Array.from(postElements).reduce(
-    (postsArr, el) => _.concat(
-      postsArr,
+    (postsArr, el) => [
+      ...postsArr,
       {
         title: el.querySelector('title').textContent,
         link: el.querySelector('link').textContent,
         description: el.querySelector('description').textContent,
         pubDate: el.querySelector('pubDate').textContent,
       },
-    ),
+    ],
     [],
   );
 
