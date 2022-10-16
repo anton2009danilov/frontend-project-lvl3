@@ -86,7 +86,6 @@ const app = () => {
       },
     },
     ui: {
-      isStateWatched: false,
       readPostsIds: [],
     },
     rss: {
@@ -187,8 +186,6 @@ const app = () => {
   });
 
   watchForUpdates();
-
-  view.ui.isStateWatched = true;
 };
 
 export default app;
