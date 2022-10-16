@@ -16,6 +16,14 @@ i18next.init({
 
 const isEmpty = (items) => items.length === 0;
 
+const omitPostsIds = (posts) => posts.map((el) => ({
+  description: el.description,
+  feedId: el.feedId,
+  link: el.link,
+  pubDate: el.pubDate,
+  title: el.title,
+}));
+
 const sortByPubDate = (items) => {
   const dates = items.map((item) => [item, Date.parse(item.pubDate)]);
   const sortedItems = dates.reduce(([sorted, unsorted], [item]) => {
@@ -184,7 +192,12 @@ const app = () => {
       const { id } = feed;
 
       const currentPosts = view.rss.posts.filter(({ feedId }) => feedId === id);
-      const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id'])), _.isEqual);
+
+      const diffPosts = _.differenceWith(
+        posts,
+        omitPostsIds(currentPosts),
+        _.isEqual,
+      );
 
       if (!isEmpty(diffPosts)) {
         const lastPostId = getLastPostId(view.rss.posts);
