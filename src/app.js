@@ -21,15 +21,15 @@ const sortById = (items) => items.reduce((sorted, item, index) => [
   items.filter((el) => el.id === index + 1).at(0),
 ], []);
 
-// const getLastPostId = (posts) => {
-//   if (isEmpty(posts)) {
-//     return 0;
-//   }
+const getLastPostId = (posts) => {
+  if (isEmpty(posts)) {
+    return 0;
+  }
 
-//   const sortedPosts = sortById(items);
+  const sortedPosts = sortById(posts);
 
-//   return sortedPosts.at(0).id;
-// };
+  return sortedPosts.at(-1).id;
+};
 
 const generateNewId = (items) => {
   if (!items.length) {
@@ -182,9 +182,7 @@ const app = () => {
       const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id'])), _.isEqual);
 
       if (!isEmpty(diffPosts)) {
-        const lastPostId = isEmpty(view.rss.posts)
-          ? 0
-          : _.last(_.sortBy(view.rss.posts, (el) => el.id)).id;
+        const lastPostId = getLastPostId(view.rss.posts);
 
         const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
           .map((post, postIndex) => {
