@@ -16,6 +16,26 @@ i18next.init({
 
 const isEmpty = (items) => items.length === 0;
 
+const sortByPubDate = (items) => {
+  const dates = items.map((item) => [item, Date.parse(item.pubDate)]);
+  const sortedItems = dates.reduce(([sorted, unsorted], [item]) => {
+    const minDate = Math.min(...unsorted);
+
+    const newUnsorted = [
+      ...unsorted.filter(([, date]) => date !== minDate),
+      ...unsorted.filter(([, date]) => date === minDate).slice(1),
+    ];
+
+    return [
+      [item, ...sorted],
+      newUnsorted,
+    ];
+  }, [[], dates])
+    .at(0);
+
+  return sortedItems;
+};
+
 const sortById = (items) => items.reduce((sorted, item, index) => [
   ...sorted,
   items.filter((el) => el.id === index + 1).at(0),
@@ -160,7 +180,7 @@ const app = () => {
           id: newPostId + index,
         }));
 
-        newRss.posts = _.sortBy(newPostsUnsorted, (post) => (post.pubDate));
+        newRss.posts = sortByPubDate(newPostsUnsorted);
 
         view.rss = {
           feeds: [...rss.feeds, ...newRss.feeds],
@@ -184,7 +204,7 @@ const app = () => {
       if (!isEmpty(diffPosts)) {
         const lastPostId = getLastPostId(view.rss.posts);
 
-        const newPosts = _.sortBy(diffPosts, (post) => (post.pubDate))
+        const newPosts = sortByPubDate(diffPosts)
           .map((post, postIndex) => {
             const newPostId = lastPostId + postIndex + 1;
             return { ...post, id: newPostId };
