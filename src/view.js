@@ -160,25 +160,46 @@ const renderView = (state) => {
   elements.feedback.textContent = state.form.message;
 };
 
+const handleViewChange = (watchedState, type, value = undefined) => {
+  switch (type) {
+    case 'message updated':
+      renderInputValidity(watchedState.form.input.isValid);
+      elements.feedback.textContent = watchedState.form.message;
+      break;
+    case 'new rss added':
+      renderView(watchedState);
+      addEventListenerToPosts(watchedState);
+      elements.form.reset();
+      elements.input.focus();
+      break;
+    case 'rss updated':
+      renderPostsList(watchedState);
+      addEventListenerToPosts(watchedState);
+      break;
+    case 'post has been watched':
+      renderWatchedPostStatus(watchedState.rss.posts.filter(
+        (post) => post.id === value.at(-1),
+      ).at(0));
+      break;
+    default:
+      throw new Error(`Unexpected type of view change: ${type}`);
+  }
+};
+
 const render = (state) => {
   const watchedState = onChange(state, (path, value) => {
     switch (path) {
       case 'form.message':
-        renderInputValidity(state.form.input.isValid);
-        elements.feedback.textContent = state.form.message;
+        handleViewChange(watchedState, 'message updated');
         break;
       case 'rss':
-        renderView(state);
-        addEventListenerToPosts(watchedState);
-        elements.form.reset();
-        elements.input.focus();
+        handleViewChange(watchedState, 'new rss added');
         break;
       case 'rss.posts':
-        renderPostsList(state);
-        addEventListenerToPosts(watchedState);
+        handleViewChange(watchedState, 'rss updated');
         break;
       case 'ui.readPostsIds':
-        renderWatchedPostStatus(state.rss.posts.filter((post) => post.id === value.at(-1)).at(0));
+        handleViewChange(watchedState, 'post has been watched', value);
         break;
       default:
     }
