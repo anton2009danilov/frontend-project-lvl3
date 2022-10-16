@@ -133,10 +133,10 @@ const app = () => {
       .catch((e) => handleInvalidRssError(view, e));
   };
 
-  const updateRss = (feed, index) => getRssHtml(feed.url)
-    .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed, index))
-    .then(([changedFeed, updatedFeedIndex, posts]) => {
-      const { id } = changedFeed;
+  const updateRss = (feed) => getRssHtml(feed.url)
+    .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed.id))
+    .then((posts) => {
+      const { id } = feed;
 
       const currentPosts = view.rss.posts.filter(({ feedId }) => feedId === id);
       const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id'])), _.isEqual);
@@ -153,8 +153,6 @@ const app = () => {
           });
 
         view.rss.posts = [...view.rss.posts, ...newPosts];
-
-        _.set(view.rss.feeds, updatedFeedIndex, changedFeed);
       }
     })
     .catch((e) => { throw (e); });

@@ -3,13 +3,11 @@ import _ from 'lodash';
 const parseFeedFromRssHtml = (rssHtml, url) => {
   const title = rssHtml.querySelector('title').textContent;
   const description = rssHtml.querySelector('description').textContent;
-  const pubDate = rssHtml.querySelector('pubDate').textContent;
 
   return {
     url,
     title,
     description,
-    pubDate,
   };
 };
 
@@ -32,8 +30,7 @@ const parsePostsFromRssHtml = (rssHtml) => {
   return newPosts;
 };
 
-const parseUpdatedRssHtml = (rssHtml, feed, index) => {
-  const { id } = feed;
+const parseUpdatedRssHtml = (rssHtml, id) => {
   const postElements = rssHtml.querySelectorAll('item');
 
   const posts = Array.from(postElements).map((el) => ({
@@ -44,10 +41,7 @@ const parseUpdatedRssHtml = (rssHtml, feed, index) => {
     pubDate: el.querySelector('pubDate').textContent,
   }));
 
-  const newPubDate = rssHtml.querySelector('pubDate').textContent;
-  const updatedFeed = _.set(feed, 'pubDate', newPubDate);
-
-  return [updatedFeed, index, posts];
+  return posts;
 };
 
 const parseRssFromHtml = (html, url) => ({
