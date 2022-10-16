@@ -1,4 +1,4 @@
-import _, { isEqual } from 'lodash';
+import _ from 'lodash';
 import axios from 'axios';
 import i18next from 'i18next';
 import { object, string } from 'yup';
