@@ -14,6 +14,8 @@ i18next.init({
   },
 });
 
+const isEmpty = (items) => items.length === 0;
+
 const changeUiState = (watchedState, message) => {
   const state = watchedState;
   state.form.input.isValid = false;
@@ -141,8 +143,8 @@ const app = () => {
       const currentPosts = view.rss.posts.filter(({ feedId }) => feedId === id);
       const diffPosts = _.differenceWith(posts, currentPosts.map((el) => _.omit(el, ['id'])), _.isEqual);
 
-      if (!_.isEmpty(diffPosts)) {
-        const lastPostId = _.isEmpty(view.rss.posts)
+      if (!isEmpty(diffPosts)) {
+        const lastPostId = isEmpty(view.rss.posts)
           ? 0
           : _.last(_.sortBy(view.rss.posts, (el) => el.id)).id;
 

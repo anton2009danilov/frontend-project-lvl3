@@ -1,6 +1,7 @@
-import _ from 'lodash';
 import i18next from 'i18next';
 import onChange from 'on-change';
+
+const isEmpty = (items) => items.length === 0;
 
 const elements = {
   form: document.querySelector('form'),
@@ -151,7 +152,7 @@ const addEventListenerToPosts = (watchedState) => {
 const renderView = (state) => {
   const { form, rss } = state;
 
-  if (!_.isEmpty(rss.feeds)) {
+  if (!isEmpty(rss.feeds)) {
     renderFeedsList(rss.feeds);
     renderPostsList(state);
     renderInputValidity(form.input.isValid);
