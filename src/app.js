@@ -16,6 +16,33 @@ i18next.init({
 
 const isEmpty = (items) => items.length === 0;
 
+const sortById = (items) => items.reduce((sorted, item, index) => [
+  ...sorted,
+  items.filter((el) => el.id === index + 1).at(0),
+], []);
+
+// const getLastPostId = (posts) => {
+//   if (isEmpty(posts)) {
+//     return 0;
+//   }
+
+//   const sortedPosts = sortById(items);
+
+//   return sortedPosts.at(0).id;
+// };
+
+const generateNewId = (items) => {
+  if (!items.length) {
+    return 1;
+  }
+
+  const sortedItems = sortById(items);
+
+  const lastItemId = sortedItems.at(-1).id;
+
+  return lastItemId + 1;
+};
+
 const changeUiState = (watchedState, message) => {
   const state = watchedState;
   state.form.input.isValid = false;
@@ -75,20 +102,20 @@ const getRssHtml = (url) => {
     .then((data) => parser.parseFromString(data.contents, 'text/xml'));
 };
 
-const generateNewId = (items) => {
-  if (!items.length) {
-    return 1;
-  }
+// const generateNewId = (items) => {
+//   if (!items.length) {
+//     return 1;
+//   }
 
-  const sortedItems = items.reduce((sorted, item, index) => [
-    ...sorted,
-    items.filter((el) => el.id === index + 1).at(0),
-  ], []);
+//   const sortedItems = items.reduce((sorted, item, index) => [
+//     ...sorted,
+//     items.filter((el) => el.id === index + 1).at(0),
+//   ], []);
 
-  const lastItemId = sortedItems.at(-1).id;
+//   const lastItemId = sortedItems.at(-1).id;
 
-  return lastItemId + 1;
-};
+//   return lastItemId + 1;
+// };
 
 const app = () => {
   const state = {
