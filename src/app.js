@@ -25,8 +25,8 @@ const omitPostsIds = (posts) => posts.map((el) => ({
 }));
 
 const sortByPubDate = (items) => {
-  const dates = items.map((item) => [item, Date.parse(item.pubDate)]);
-  const sortedItems = dates.reduce(([sorted, unsorted], [item]) => {
+  const unsortedItems = items.map((item) => [item, Date.parse(item.pubDate)]);
+  const sortedItems = unsortedItems.reduce(([sorted, unsorted], [item]) => {
     const minDate = Math.min(...unsorted);
 
     const newUnsorted = [
@@ -38,7 +38,7 @@ const sortByPubDate = (items) => {
       [item, ...sorted],
       newUnsorted,
     ];
-  }, [[], dates])
+  }, [[], unsortedItems])
     .at(0);
 
   return sortedItems;
