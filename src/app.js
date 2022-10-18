@@ -22,24 +22,24 @@ const changeUiState = (watchedState, message) => {
 };
 
 const handleNetworkError = (watchedState, e) => {
-  changeUiState(watchedState, i18next.t('yup.errors.networkError'));
+  changeUiState(watchedState, 'yup.errors.networkError');
   throw (e);
 };
 
 const handleInvalidRssError = (watchedState, e) => {
   if (e.message !== 'Network Error') {
-    changeUiState(watchedState, i18next.t('yup.errors.invalidRss'));
+    changeUiState(watchedState, 'yup.errors.invalidRss');
     throw (e);
   }
 };
 
 const handleInvalidUrlError = (watchedState) => {
-  changeUiState(watchedState, i18next.t('yup.errors.invalidUrl'));
+  changeUiState(watchedState, 'yup.errors.invalidUrl');
 };
 
 const checkForEmptyRssUrlError = (watchedState, url) => {
   if (!url) {
-    changeUiState(watchedState, i18next.t('yup.errors.emptyRssUrl'));
+    changeUiState(watchedState, 'yup.errors.emptyRssUrl');
     return true;
   }
 
@@ -51,7 +51,7 @@ const checkForAlreadyExistsError = (watchedState, url) => {
   const isRepeated = feeds.some((feed) => feed.url === url);
 
   if (isRepeated) {
-    changeUiState(watchedState, i18next.t('yup.errors.alreadyExists'));
+    changeUiState(watchedState, 'yup.errors.alreadyExists');
     return true;
   }
 
@@ -128,7 +128,7 @@ const app = () => {
         };
 
         form.input.isValid = true;
-        form.message = i18next.t('yup.success');
+        form.message = 'yup.success';
       })
       .catch((e) => handleInvalidRssError(wathedState, e));
   };

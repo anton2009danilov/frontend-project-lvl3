@@ -143,7 +143,7 @@ const addEventListenerToPosts = (watchedState) => {
       modalLink.href = post.link;
 
       watchedState.form.input.isValid = true;
-      watchedState.form.message = i18next.t('yup.rssView');
+      watchedState.form.message = 'yup.rssView';
     });
   });
 };
@@ -164,7 +164,7 @@ const handleViewChange = (watchedState, type, value = undefined) => {
   switch (type) {
     case 'message updated':
       renderInputValidity(watchedState.form.input.isValid);
-      elements.feedback.textContent = watchedState.form.message;
+      elements.feedback.textContent = i18next.t(watchedState.form.message);
       break;
     case 'new rss added':
       renderView(watchedState);
