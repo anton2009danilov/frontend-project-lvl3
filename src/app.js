@@ -16,48 +16,6 @@ const omitPostsIds = (posts) => posts.map((el) => ({
   title: el.title,
 }));
 
-const changeUiState = (watchedState, message) => {
-  watchedState.form.input.isValid = false;
-  watchedState.form.message = message;
-};
-
-const handleNetworkError = (watchedState, e) => {
-  changeUiState(watchedState, 'yup.errors.networkError');
-  throw (e);
-};
-
-const handleInvalidRssError = (watchedState, e) => {
-  if (e.message !== 'Network Error') {
-    changeUiState(watchedState, 'yup.errors.invalidRss');
-    throw (e);
-  }
-};
-
-const handleInvalidUrlError = (watchedState) => {
-  changeUiState(watchedState, 'yup.errors.invalidUrl');
-};
-
-const checkForEmptyRssUrlError = (watchedState, url) => {
-  if (!url) {
-    changeUiState(watchedState, 'yup.errors.emptyRssUrl');
-    return true;
-  }
-
-  return false;
-};
-
-const checkForAlreadyExistsError = (watchedState, url) => {
-  const { feeds } = watchedState.rss;
-  const isRepeated = feeds.some((feed) => feed.url === url);
-
-  if (isRepeated) {
-    changeUiState(watchedState, 'yup.errors.alreadyExists');
-    return true;
-  }
-
-  return false;
-};
-
 const validateUrl = (url) => {
   const urlSchema = object({
     url: string().url(),
@@ -99,17 +57,23 @@ const app = () => {
     },
   };
 
-  const wathedState = render(state);
+  const watchedState = render(state);
 
   const addNewRss = (url) => {
-    const { form, rss } = wathedState;
+    const { form, rss } = watchedState;
 
-    if (checkForEmptyRssUrlError(wathedState, url)) {
+    if (!url) {
+      watchedState.form.input.isValid = false;
+      watchedState.form.message = 'yup.errors.emptyRssUrl';
       return;
     }
 
     getRssHtml(url)
-      .catch((e) => handleNetworkError(wathedState, e))
+      .catch((e) => {
+        watchedState.form.input.isValid = false;
+        watchedState.form.message = 'yup.errors.networkError';
+        throw (e);
+      })
       .then((rssHtml) => {
         const newFeedId = _.uniqueId('feed_');
         const newRss = parseRssFromHtml(rssHtml, url);
@@ -122,7 +86,7 @@ const app = () => {
           id: _.uniqueId('post_'),
         }));
 
-        wathedState.rss = {
+        watchedState.rss = {
           feeds: [...rss.feeds, ...newRss.feeds],
           posts: [...rss.posts, ...newRss.posts],
         };
@@ -130,7 +94,13 @@ const app = () => {
         form.input.isValid = true;
         form.message = 'yup.success';
       })
-      .catch((e) => handleInvalidRssError(wathedState, e));
+      .catch((e) => {
+        if (e.message !== 'Network Error') {
+          watchedState.form.input.isValid = false;
+          watchedState.form.message = 'yup.errors.invalidRss';
+          throw (e);
+        }
+      });
   };
 
   const updateRss = (feed) => getRssHtml(feed.url)
@@ -138,7 +108,7 @@ const app = () => {
     .then((posts) => {
       const { id } = feed;
 
-      const currentPosts = wathedState.rss.posts.filter(({ feedId }) => feedId === id);
+      const currentPosts = watchedState.rss.posts.filter(({ feedId }) => feedId === id);
 
       const diffPosts = _.differenceWith(
         posts,
@@ -152,7 +122,7 @@ const app = () => {
           return { ...post, id: newPostId };
         });
 
-        wathedState.rss.posts = [...wathedState.rss.posts, ...newPosts];
+        watchedState.rss.posts = [...watchedState.rss.posts, ...newPosts];
       }
     })
     .catch((e) => { throw (e); });
@@ -160,7 +130,7 @@ const app = () => {
   const watchForUpdates = () => {
     const timeStep = 5000;
 
-    Promise.allSettled(wathedState.rss.feeds.map((feed, index) => updateRss(feed, index)))
+    Promise.allSettled(watchedState.rss.feeds.map((feed, index) => updateRss(feed, index)))
       .then(() => setTimeout(watchForUpdates, timeStep));
   };
 
@@ -174,13 +144,20 @@ const app = () => {
 
     validateUrl({ url })
       .then(() => {
-        if (checkForAlreadyExistsError(wathedState, url)) {
-          return false;
+        const isRepeated = watchedState.rss.feeds.some((feed) => feed.url === url);
+
+        if (isRepeated) {
+          watchedState.form.input.isValid = false;
+          watchedState.form.message = 'yup.errors.alreadyExists';
+          return true;
         }
 
         return addNewRss(url);
       })
-      .catch((e) => handleInvalidUrlError(wathedState, e));
+      .catch(() => {
+        watchedState.form.input.isValid = false;
+        watchedState.form.message = 'yup.errors.invalidUrl';
+      });
   });
 
   watchForUpdates();
