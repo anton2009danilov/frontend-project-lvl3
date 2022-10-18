@@ -26,4 +26,4 @@ const parseRssFromHtml = (html, url) => ({
   posts: parsePostsFromRssHtml(html),
 });
 
-export { parseRssFromHtml, parsePostsFromRssHtml };
+export default parseRssFromHtml;
