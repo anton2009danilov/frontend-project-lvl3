@@ -1,5 +1,6 @@
+/* eslint-disable no-param-reassign */
 import _ from 'lodash';
-import axios from 'axios';
+
 import i18next from 'i18next';
 import { object, string } from 'yup';
 import ru from './locales/ru.js';
@@ -23,13 +24,6 @@ const validateUrl = (url) => {
   });
 
   return urlSchema.validate(url);
-};
-
-const getRssHtml = (url) => {
-  const parser = new DOMParser();
-
-  return axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
-    .then((response) => parser.parseFromString(response.data.contents, 'text/xml'));
 };
 
 const app = () => {
@@ -68,15 +62,14 @@ const app = () => {
       return;
     }
 
-    getRssHtml(url)
+    parseRssFromHtml(url)
       .catch((e) => {
         watchedState.form.input.isValid = false;
         watchedState.form.message = 'yup.errors.networkError';
         throw (e);
       })
-      .then((rssHtml) => {
+      .then((newRss) => {
         const newFeedId = _.uniqueId('feed_');
-        const newRss = parseRssFromHtml(rssHtml, url);
 
         newRss.feeds = newRss.feeds.map((feed) => ({ ...feed, id: newFeedId }));
 
@@ -103,9 +96,8 @@ const app = () => {
       });
   };
 
-  const updateRss = (feed) => getRssHtml(feed.url)
-    .then((rssHtml) => parseRssFromHtml(rssHtml).posts
-      .map((post) => ({ ...post, feedId: feed.id })))
+  const updateRss = (feed) => parseRssFromHtml(feed.url)
+    .then((rss) => rss.posts.map((post) => ({ ...post, feedId: feed.id })))
     .then((posts) => {
       const { id } = feed;
 
