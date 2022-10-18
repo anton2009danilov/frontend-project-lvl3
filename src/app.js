@@ -111,8 +111,7 @@ const app = () => {
 
         watchedState.rss.posts = [...watchedState.rss.posts, ...newPosts];
       }
-    })
-    .catch((e) => { throw (e); });
+    });
 
   const watchForUpdates = () => {
     const timeStep = 5000;
