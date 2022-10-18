@@ -27,11 +27,14 @@ const parseRssFromHtml = (url) => {
   const parser = new DOMParser();
 
   return axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
-    .then((response) => parser.parseFromString(response.data.contents, 'text/xml'))
-    .then((rssHtml) => ({
-      feeds: [parseFeedFromRssHtml(rssHtml, url)],
-      posts: parsePostsFromRssHtml(rssHtml),
-    }));
+    .then((response) => {
+      const rssHtml = parser.parseFromString(response.data.contents, 'text/xml');
+
+      return {
+        feeds: [parseFeedFromRssHtml(rssHtml, url)],
+        posts: parsePostsFromRssHtml(rssHtml),
+      };
+    });
 };
 
 export default parseRssFromHtml;

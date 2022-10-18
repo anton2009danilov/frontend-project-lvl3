@@ -90,11 +90,9 @@ const app = () => {
   };
 
   const updateRss = (feed) => parseRssFromHtml(feed.url)
-    .then((rss) => rss.posts.map((post) => ({ ...post, feedId: feed.id })))
-    .then((posts) => {
-      const { id } = feed;
-
-      const currentPosts = watchedState.rss.posts.filter(({ feedId }) => feedId === id);
+    .then((rss) => {
+      const posts = rss.posts.map((post) => ({ ...post, feedId: feed.id }));
+      const currentPosts = watchedState.rss.posts.filter(({ feedId }) => feedId === feed.id);
 
       const diffPosts = _.differenceWith(
         posts,
