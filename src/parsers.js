@@ -12,26 +12,7 @@ const parseFeedFromRssHtml = (rssHtml, url) => {
 const parsePostsFromRssHtml = (rssHtml) => {
   const postElements = rssHtml.querySelectorAll('item');
 
-  const newPosts = Array.from(postElements).reduce(
-    (postsArr, el) => [
-      ...postsArr,
-      {
-        title: el.querySelector('title').textContent,
-        link: el.querySelector('link').textContent,
-        description: el.querySelector('description').textContent,
-      },
-    ],
-    [],
-  );
-
-  return newPosts;
-};
-
-const parseUpdatedRssHtml = (rssHtml, id) => {
-  const postElements = rssHtml.querySelectorAll('item');
-
   const posts = Array.from(postElements).map((el) => ({
-    feedId: id,
     title: el.querySelector('title').textContent,
     link: el.querySelector('link').textContent,
     description: el.querySelector('description').textContent,
@@ -45,4 +26,4 @@ const parseRssFromHtml = (html, url) => ({
   posts: parsePostsFromRssHtml(html),
 });
 
-export { parseRssFromHtml, parseUpdatedRssHtml };
+export { parseRssFromHtml, parsePostsFromRssHtml };

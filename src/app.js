@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { object, string } from 'yup';
 import ru from './locales/ru.js';
 import render from './view.js';
-import { parseRssFromHtml, parseUpdatedRssHtml } from './parsers.js';
+import { parseRssFromHtml, parsePostsFromRssHtml } from './parsers.js';
 
 const isEmpty = (items) => items.length === 0;
 
@@ -104,7 +104,8 @@ const app = () => {
   };
 
   const updateRss = (feed) => getRssHtml(feed.url)
-    .then((rssHtml) => parseUpdatedRssHtml(rssHtml, feed.id))
+    .then((rssHtml) => parsePostsFromRssHtml(rssHtml)
+      .map((post) => ({ ...post, feedId: feed.id })))
     .then((posts) => {
       const { id } = feed;
 
