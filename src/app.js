@@ -146,17 +146,17 @@ const app = () => {
     },
   };
 
-  const view = render(state);
+  const wathedState = render(state);
 
   const addNewRss = (url) => {
-    const { form, rss } = view;
+    const { form, rss } = wathedState;
 
-    if (checkForEmptyRssUrlError(view, url)) {
+    if (checkForEmptyRssUrlError(wathedState, url)) {
       return;
     }
 
     getRssHtml(url)
-      .catch((e) => handleNetworkError(view, e))
+      .catch((e) => handleNetworkError(wathedState, e))
       .then((rssHtml) => {
         const { feeds, posts } = rss;
 
@@ -174,7 +174,7 @@ const app = () => {
 
         newRss.posts = sortByPubDate(newPostsUnsorted);
 
-        view.rss = {
+        wathedState.rss = {
           feeds: [...rss.feeds, ...newRss.feeds],
           posts: [...rss.posts, ...newRss.posts],
         };
@@ -182,7 +182,7 @@ const app = () => {
         form.input.isValid = true;
         form.message = i18next.t('yup.success');
       })
-      .catch((e) => handleInvalidRssError(view, e));
+      .catch((e) => handleInvalidRssError(wathedState, e));
   };
 
   const updateRss = (feed) => getRssHtml(feed.url)
@@ -190,7 +190,7 @@ const app = () => {
     .then((posts) => {
       const { id } = feed;
 
-      const currentPosts = view.rss.posts.filter(({ feedId }) => feedId === id);
+      const currentPosts = wathedState.rss.posts.filter(({ feedId }) => feedId === id);
 
       const diffPosts = _.differenceWith(
         posts,
@@ -199,7 +199,7 @@ const app = () => {
       );
 
       if (!isEmpty(diffPosts)) {
-        const lastPostId = getLastPostId(view.rss.posts);
+        const lastPostId = getLastPostId(wathedState.rss.posts);
 
         const newPosts = sortByPubDate(diffPosts)
           .map((post, postIndex) => {
@@ -207,7 +207,7 @@ const app = () => {
             return { ...post, id: newPostId };
           });
 
-        view.rss.posts = [...view.rss.posts, ...newPosts];
+        wathedState.rss.posts = [...wathedState.rss.posts, ...newPosts];
       }
     })
     .catch((e) => { throw (e); });
@@ -215,7 +215,7 @@ const app = () => {
   const watchForUpdates = () => {
     const timeStep = 5000;
 
-    Promise.allSettled(view.rss.feeds.map((feed, index) => updateRss(feed, index)))
+    Promise.allSettled(wathedState.rss.feeds.map((feed, index) => updateRss(feed, index)))
       .then(() => setTimeout(watchForUpdates, timeStep));
   };
 
@@ -229,13 +229,13 @@ const app = () => {
 
     validateUrl({ url })
       .then(() => {
-        if (checkForAlreadyExistsError(view, url)) {
+        if (checkForAlreadyExistsError(wathedState, url)) {
           return false;
         }
 
         return addNewRss(url);
       })
-      .catch((e) => handleInvalidUrlError(view, e));
+      .catch((e) => handleInvalidUrlError(wathedState, e));
   });
 
   watchForUpdates();
