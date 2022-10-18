@@ -57,11 +57,6 @@ const app = () => {
     const { form, rss } = watchedState;
 
     parseRssFromHtml(url)
-      .catch((e) => {
-        watchedState.form.input.isValid = false;
-        watchedState.form.message = 'yup.errors.networkError';
-        throw (e);
-      })
       .then((newRss) => {
         const newFeedId = _.uniqueId('feed_');
 
@@ -82,11 +77,15 @@ const app = () => {
         form.message = 'yup.success';
       })
       .catch((e) => {
-        if (e.message !== 'Network Error') {
+        if (e.message === 'Network Error') {
           watchedState.form.input.isValid = false;
-          watchedState.form.message = 'yup.errors.invalidRss';
+          watchedState.form.message = 'yup.errors.networkError';
           throw (e);
         }
+
+        watchedState.form.input.isValid = false;
+        watchedState.form.message = 'yup.errors.invalidRss';
+        throw (e);
       });
   };
 
