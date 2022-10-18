@@ -126,7 +126,7 @@ const addEventListenerToPosts = (watchedState) => {
 
   Array.from(postsElements).forEach((postElement) => {
     const postId = postElement.dataset.post_id;
-    const post = watchedState.rss.posts.filter((item) => item.id === parseInt(postId, 10)).at(0);
+    const post = watchedState.rss.posts.filter((item) => item.id === postId).at(0);
 
     postElement.addEventListener('click', () => {
       const modal = document.getElementById('modal');

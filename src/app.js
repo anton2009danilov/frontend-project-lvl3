@@ -16,53 +16,6 @@ const omitPostsIds = (posts) => posts.map((el) => ({
   title: el.title,
 }));
 
-const sortByPubDate = (items) => {
-  const unsortedItems = items.map((item) => [item, Date.parse(item.pubDate)]);
-  const sortedItems = unsortedItems.reduce(([sorted, unsorted], [item]) => {
-    const minDate = Math.min(...unsorted);
-
-    const newUnsorted = [
-      ...unsorted.filter(([, date]) => date !== minDate),
-      ...unsorted.filter(([, date]) => date === minDate).slice(1),
-    ];
-
-    return [
-      [item, ...sorted],
-      newUnsorted,
-    ];
-  }, [[], unsortedItems])
-    .at(0);
-
-  return sortedItems;
-};
-
-const sortById = (items) => items.reduce((sorted, item, index) => [
-  ...sorted,
-  items.filter((el) => el.id === index + 1).at(0),
-], []);
-
-const getLastPostId = (posts) => {
-  if (isEmpty(posts)) {
-    return 0;
-  }
-
-  const sortedPosts = sortById(posts);
-
-  return sortedPosts.at(-1).id;
-};
-
-const generateNewId = (items) => {
-  if (!items.length) {
-    return 1;
-  }
-
-  const sortedItems = sortById(items);
-
-  const lastItemId = sortedItems.at(-1).id;
-
-  return lastItemId + 1;
-};
-
 const changeUiState = (watchedState, message) => {
   watchedState.form.input.isValid = false;
   watchedState.form.message = message;
@@ -158,21 +111,16 @@ const app = () => {
     getRssHtml(url)
       .catch((e) => handleNetworkError(wathedState, e))
       .then((rssHtml) => {
-        const { feeds, posts } = rss;
-
-        const newFeedId = generateNewId(feeds);
-        const newPostId = generateNewId(posts);
-
+        const newFeedId = _.uniqueId('feed_');
         const newRss = parseRssFromHtml(rssHtml, url);
+
         newRss.feeds = newRss.feeds.map((feed) => ({ ...feed, id: newFeedId }));
 
-        const newPostsUnsorted = newRss.posts.map((post, index) => ({
+        newRss.posts = newRss.posts.map((post) => ({
           ...post,
           feedId: newFeedId,
-          id: newPostId + index,
+          id: _.uniqueId('post_'),
         }));
-
-        newRss.posts = sortByPubDate(newPostsUnsorted);
 
         wathedState.rss = {
           feeds: [...rss.feeds, ...newRss.feeds],
@@ -199,13 +147,10 @@ const app = () => {
       );
 
       if (!isEmpty(diffPosts)) {
-        const lastPostId = getLastPostId(wathedState.rss.posts);
-
-        const newPosts = sortByPubDate(diffPosts)
-          .map((post, postIndex) => {
-            const newPostId = lastPostId + postIndex + 1;
-            return { ...post, id: newPostId };
-          });
+        const newPosts = diffPosts.map((post) => {
+          const newPostId = _.uniqueId('post_');
+          return { ...post, id: newPostId };
+        });
 
         wathedState.rss.posts = [...wathedState.rss.posts, ...newPosts];
       }
