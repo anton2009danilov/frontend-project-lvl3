@@ -19,7 +19,6 @@ const parsePostsFromRssHtml = (rssHtml) => {
         title: el.querySelector('title').textContent,
         link: el.querySelector('link').textContent,
         description: el.querySelector('description').textContent,
-        pubDate: el.querySelector('pubDate').textContent,
       },
     ],
     [],
@@ -36,7 +35,6 @@ const parseUpdatedRssHtml = (rssHtml, id) => {
     title: el.querySelector('title').textContent,
     link: el.querySelector('link').textContent,
     description: el.querySelector('description').textContent,
-    pubDate: el.querySelector('pubDate').textContent,
   }));
 
   return posts;
