@@ -4,7 +4,7 @@ import _ from 'lodash';
 import i18next from 'i18next';
 import { object, string } from 'yup';
 import ru from './locales/ru.js';
-import renderView from './view.js';
+import render from './view.js';
 import parseRssFromHtml from './parsers.js';
 
 const isEmpty = (items) => items.length === 0;
@@ -51,7 +51,7 @@ const app = () => {
     },
   };
 
-  const watchedState = renderView(state);
+  const { watchedState } = render(state);
 
   const addNewRss = (url) => {
     const { form, rss } = watchedState;

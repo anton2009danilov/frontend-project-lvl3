@@ -207,7 +207,7 @@ const render = (state) => {
   });
 
   renderView(state);
-  return watchedState;
+  return { watchedState };
 };
 
 export default render;
