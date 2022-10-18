@@ -36,12 +36,3 @@ rules:
     }
   ]
   fp/no-mutation: 0
-
-overrides: [
-  {
-    "files": ["*"],
-    "rules": {
-      "no-param-reassign": 0
-    }
-  }
-]
