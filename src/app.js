@@ -20,7 +20,7 @@ const omit = (elements, omittedKey) => elements.map((element) => Object.entries(
 
 const validateUrl = (url) => {
   const urlSchema = object({
-    url: string().url(),
+    url: string().url().min(1),
   });
 
   return urlSchema.validate(url);
@@ -55,12 +55,6 @@ const app = () => {
 
   const addNewRss = (url) => {
     const { form, rss } = watchedState;
-
-    if (!url) {
-      watchedState.form.input.isValid = false;
-      watchedState.form.message = 'yup.errors.emptyRssUrl';
-      return;
-    }
 
     parseRssFromHtml(url)
       .catch((e) => {
@@ -147,7 +141,13 @@ const app = () => {
 
         return addNewRss(url);
       })
-      .catch(() => {
+      .catch((e) => {
+        if (e.toString() === 'ValidationError: url must be at least 1 characters') {
+          watchedState.form.input.isValid = false;
+          watchedState.form.message = 'yup.errors.emptyRssUrl';
+          return;
+        }
+
         watchedState.form.input.isValid = false;
         watchedState.form.message = 'yup.errors.invalidUrl';
       });
