@@ -122,12 +122,11 @@ const renderPostsList = (state) => {
 };
 
 const addEventListenerToPosts = (watchedState) => {
-  const state = watchedState;
   const postsElements = elements.posts.getElementsByTagName('button');
 
   Array.from(postsElements).forEach((postElement) => {
     const postId = postElement.dataset.post_id;
-    const post = state.rss.posts.filter((item) => item.id === parseInt(postId, 10)).at(0);
+    const post = watchedState.rss.posts.filter((item) => item.id === parseInt(postId, 10)).at(0);
 
     postElement.addEventListener('click', () => {
       const modal = document.getElementById('modal');
@@ -135,16 +134,16 @@ const addEventListenerToPosts = (watchedState) => {
       const modalBody = modal.querySelector('.modal-body');
       const modalLink = modal.querySelector('a');
 
-      if (!state.ui.readPostsIds.includes(post.id)) {
-        state.ui.readPostsIds = [...state.ui.readPostsIds, post.id];
+      if (!watchedState.ui.readPostsIds.includes(post.id)) {
+        watchedState.ui.readPostsIds = [...watchedState.ui.readPostsIds, post.id];
       }
 
       modalTitle.textContent = post.title;
       modalBody.textContent = post.description;
       modalLink.href = post.link;
 
-      state.form.input.isValid = true;
-      state.form.message = i18next.t('yup.rssView');
+      watchedState.form.input.isValid = true;
+      watchedState.form.message = i18next.t('yup.rssView');
     });
   });
 };

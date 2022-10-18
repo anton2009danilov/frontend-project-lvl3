@@ -72,9 +72,8 @@ const generateNewId = (items) => {
 };
 
 const changeUiState = (watchedState, message) => {
-  const state = watchedState;
-  state.form.input.isValid = false;
-  state.form.message = message;
+  watchedState.form.input.isValid = false;
+  watchedState.form.message = message;
 };
 
 const handleNetworkError = (watchedState, e) => {
