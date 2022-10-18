@@ -6,14 +6,6 @@ import ru from './locales/ru.js';
 import render from './view.js';
 import { parseRssFromHtml, parseUpdatedRssHtml } from './parsers.js';
 
-i18next.init({
-  lng: 'ru',
-  debug: true,
-  resources: {
-    ru,
-  },
-});
-
 const isEmpty = (items) => items.length === 0;
 
 const omitPostsIds = (posts) => posts.map((el) => ({
@@ -130,6 +122,14 @@ const getRssHtml = (url) => {
 };
 
 const app = () => {
+  i18next.init({
+    lng: 'ru',
+    debug: true,
+    resources: {
+      ru,
+    },
+  });
+
   const state = {
     form: {
       message: null,
