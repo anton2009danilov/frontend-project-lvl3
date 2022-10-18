@@ -8,13 +8,14 @@ import { parseRssFromHtml, parseUpdatedRssHtml } from './parsers.js';
 
 const isEmpty = (items) => items.length === 0;
 
-const omitPostsIds = (posts) => posts.map((el) => ({
-  description: el.description,
-  feedId: el.feedId,
-  link: el.link,
-  pubDate: el.pubDate,
-  title: el.title,
-}));
+const omit = (elements, omittedKey) => elements.map((element) => Object.entries(element)
+  .reduce((modifiedElement, [key, value]) => {
+    if (key !== omittedKey) {
+      return { ...modifiedElement, [key]: value };
+    }
+
+    return modifiedElement;
+  }, {}));
 
 const validateUrl = (url) => {
   const urlSchema = object({
@@ -112,7 +113,7 @@ const app = () => {
 
       const diffPosts = _.differenceWith(
         posts,
-        omitPostsIds(currentPosts),
+        omit(currentPosts, 'id'),
         _.isEqual,
       );
 
