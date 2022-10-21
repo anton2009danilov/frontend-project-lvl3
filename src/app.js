@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+import axios from 'axios';
 import _ from 'lodash';
 
 import i18next from 'i18next';
@@ -56,7 +57,9 @@ const app = () => {
   const addNewRss = (url) => {
     const { form, rss } = watchedState;
 
-    parseRssFromHtml(url)
+    const request = axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`);
+
+    parseRssFromHtml(request, url)
       .then((newRss) => {
         const newFeedId = _.uniqueId('feed_');
 
@@ -89,26 +92,30 @@ const app = () => {
       });
   };
 
-  const updateRss = (feed) => parseRssFromHtml(feed.url)
-    .then((rss) => {
-      const posts = rss.posts.map((post) => ({ ...post, feedId: feed.id }));
-      const currentPosts = watchedState.rss.posts.filter(({ feedId }) => feedId === feed.id);
+  const updateRss = (feed) => {
+    const request = axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(feed.url)}`);
 
-      const diffPosts = _.differenceWith(
-        posts,
-        omit(currentPosts, 'id'),
-        _.isEqual,
-      );
+    return parseRssFromHtml(request, feed.url)
+      .then((rss) => {
+        const posts = rss.posts.map((post) => ({ ...post, feedId: feed.id }));
+        const currentPosts = watchedState.rss.posts.filter(({ feedId }) => feedId === feed.id);
 
-      if (!isEmpty(diffPosts)) {
-        const newPosts = diffPosts.map((post) => {
-          const newPostId = _.uniqueId('post_');
-          return { ...post, id: newPostId };
-        });
+        const diffPosts = _.differenceWith(
+          posts,
+          omit(currentPosts, 'id'),
+          _.isEqual,
+        );
 
-        watchedState.rss.posts = [...watchedState.rss.posts, ...newPosts];
-      }
-    });
+        if (!isEmpty(diffPosts)) {
+          const newPosts = diffPosts.map((post) => {
+            const newPostId = _.uniqueId('post_');
+            return { ...post, id: newPostId };
+          });
+
+          watchedState.rss.posts = [...watchedState.rss.posts, ...newPosts];
+        }
+      });
+  };
 
   const watchForUpdates = () => {
     const timeStep = 5000;
