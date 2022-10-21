@@ -14,7 +14,9 @@ const elements = {
 
 const createContainerHtmlElement = (type) => {
   const titleTag = type === 'feeds' ? 'h2' : 'h4';
-  const titleText = type === 'feeds' ? 'Фиды' : 'Посты';
+  const titleText = type === 'feeds'
+    ? i18next.t('cardTitles.feeds')
+    : i18next.t('cardTitles.posts');
 
   const card = document.createElement('div');
   const cardBody = document.createElement('div');

@@ -11,5 +11,9 @@ export default {
         networkError: 'Ошибка сети',
       },
     },
+    cardTitles: {
+      posts: 'Посты',
+      feeds: 'Фиды',
+    },
   },
 };
