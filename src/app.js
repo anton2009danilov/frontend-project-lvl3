@@ -63,7 +63,7 @@ const app = () => {
       .then((newRss) => {
         const newFeedId = _.uniqueId('feed_');
 
-        newRss.feeds = newRss.feeds.map((feed) => ({ ...feed, id: newFeedId }));
+        newRss.feed = { ...newRss.feed, id: newFeedId };
 
         newRss.posts = newRss.posts.map((post) => ({
           ...post,
@@ -72,7 +72,7 @@ const app = () => {
         }));
 
         watchedState.rss = {
-          feeds: [...rss.feeds, ...newRss.feeds],
+          feeds: [...rss.feeds, newRss.feed],
           posts: [...rss.posts, ...newRss.posts],
         };
 

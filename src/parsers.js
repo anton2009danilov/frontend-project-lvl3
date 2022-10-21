@@ -29,7 +29,7 @@ const parseRssFromHtml = (request, url) => {
       const rssHtml = parser.parseFromString(response.data.contents, 'text/xml');
 
       return {
-        feeds: [parseFeedFromRssHtml(rssHtml, url)],
+        feed: parseFeedFromRssHtml(rssHtml, url),
         posts: parsePostsFromRssHtml(rssHtml),
       };
     });
