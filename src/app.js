@@ -19,12 +19,18 @@ const omit = (elements, omittedKey) => elements.map((element) => Object.entries(
     return modifiedElement;
   }, {}));
 
-const validateUrl = (url) => {
+const validateUrl = (url, watchedState) => {
   const urlSchema = object({
     url: string().url().min(1),
   });
 
-  return urlSchema.validate(url);
+  const isRepeated = watchedState.rss.feeds.some((feed) => feed.url === url);
+
+  if (isRepeated) {
+    return Promise.reject(new Error('RSS already exists'));
+  }
+
+  return urlSchema.validate({ url });
 };
 
 const app = () => {
@@ -132,19 +138,15 @@ const app = () => {
 
     const url = formData.get('url');
 
-    validateUrl({ url })
-      .then(() => {
-        const isRepeated = watchedState.rss.feeds.some((feed) => feed.url === url);
-
-        if (isRepeated) {
+    validateUrl(url, watchedState)
+      .then(() => addNewRss(url))
+      .catch((e) => {
+        if (e.toString() === 'Error: RSS already exists') {
           watchedState.form.input.isValid = false;
           watchedState.form.message = 'yup.errors.alreadyExists';
-          return true;
+          return;
         }
 
-        return addNewRss(url);
-      })
-      .catch((e) => {
         if (e.toString() === 'ValidationError: url must be at least 1 characters') {
           watchedState.form.input.isValid = false;
           watchedState.form.message = 'yup.errors.emptyRssUrl';
