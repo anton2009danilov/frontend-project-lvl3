@@ -96,7 +96,7 @@ const renderSinglePost = (post, isRead) => {
   buttonElement.dataset.post_id = post.id;
   buttonElement.dataset.bsToggle = 'modal';
   buttonElement.dataset.bsTarget = '#modal';
-  buttonElement.textContent = 'Просмотр';
+  buttonElement.textContent = i18next.t('postPreviewBtnText');
 
   postElement.append(linkElement, buttonElement);
 
